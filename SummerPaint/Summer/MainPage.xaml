@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:control="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d" RequestedTheme="Light"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -20,9 +21,10 @@
             <InkToolbar Grid.Row="1" HorizontalAlignment="Center" Background="AliceBlue" TargetInkCanvas="{x:Bind MainCanvas}"/>
         </control:DropShadowPanel>
         <control:DropShadowPanel Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" BlurRadius="12" ShadowOpacity="0.2">
-            <Grid Background="AliceBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid Background="LemonChiffon" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <TextBlock Text="夏花 Summer" Foreground="Sienna" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
             </Grid>
         </control:DropShadowPanel>
+        <Image x:Name="BackgroundImage" Grid.Row="1" Grid.RowSpan="2" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
     </Grid>
 </Page>

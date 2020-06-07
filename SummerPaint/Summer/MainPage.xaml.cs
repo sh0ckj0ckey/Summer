@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Networking.Sockets;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -14,6 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
@@ -49,6 +51,12 @@ namespace Summer
             titleBar.ButtonPressedForegroundColor = Colors.Black;
             titleBar.ButtonInactiveForegroundColor = Colors.Gray;
             titleBar.ForegroundColor = Colors.Black;
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            var back = new BitmapImage(new System.Uri("ms-appx:///Assets/Background/background.png"));
+            BackgroundImage.Source = back;
         }
     }
 }
