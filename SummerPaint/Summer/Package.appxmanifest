@@ -7,15 +7,15 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="7e2697b7-2dd1-41df-82b0-3f8a0baac86d"
-    Publisher="CN=Booker"
-    Version="1.0.0.0" />
+    Name="22189NoMewing.25114A398B0DE"
+    Publisher="CN=E6D8FAFA-3EF4-4E47-B885-52144C67BFF5"
+    Version="0.0.2.0" />
 
-  <mp:PhoneIdentity PhoneProductId="7e2697b7-2dd1-41df-82b0-3f8a0baac86d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="078aed0d-b4ae-4213-9784-d7744ad739bb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Summer</DisplayName>
-    <PublisherDisplayName>Booker</PublisherDisplayName>
+    <DisplayName>夏花 - 纯粹草图</DisplayName>
+    <PublisherDisplayName>No Mewing</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,11 +32,11 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="Summer.App">
       <uap:VisualElements
-        DisplayName="Summer"
+        DisplayName="夏花"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="Summer"
-        BackgroundColor="#052990">
+        Description="Summer is coming.."
+        BackgroundColor="#ED7179">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="夏花" Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
@@ -44,7 +44,7 @@
             <uap:ShowOn Tile="wide310x150Logo"/>
           </uap:ShowNameOnTiles>
         </uap:DefaultTile >
-        <uap:SplashScreen Image="Assets\SplashScreen.png"  BackgroundColor="#052990"/>
+        <uap:SplashScreen Image="Assets\SplashScreen.png"  BackgroundColor="#ED7179"/>
       </uap:VisualElements>
     </Application>
   </Applications>

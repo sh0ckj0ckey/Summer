@@ -8,7 +8,7 @@
     xmlns:control="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d" RequestedTheme="Light"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    Loaded="Page_Loaded">
+    x:Name="SummerMainPage" Loaded="Page_Loaded">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -18,7 +18,9 @@
         </Grid.RowDefinitions>
         <InkCanvas x:Name="MainCanvas" Grid.Row="1" Grid.RowSpan="2"/>
         <control:DropShadowPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" BlurRadius="12" ShadowOpacity="0.2">
-            <InkToolbar Grid.Row="1" HorizontalAlignment="Center" Background="AliceBlue" TargetInkCanvas="{x:Bind MainCanvas}"/>
+            <StackPanel Orientation="Horizontal">
+                <InkToolbar Grid.Row="1" HorizontalAlignment="Center" Background="White" TargetInkCanvas="{x:Bind MainCanvas}"/>
+            </StackPanel>
         </control:DropShadowPanel>
         <control:DropShadowPanel Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" BlurRadius="12" ShadowOpacity="0.2">
             <Grid Background="LemonChiffon" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
