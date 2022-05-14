@@ -9,6 +9,17 @@
     mc:Ignorable="d" RequestedTheme="Light"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     x:Name="SummerMainPage" Loaded="Page_Loaded">
+    <Page.Resources>
+        <Style x:Key="InkToolbarStyle1" TargetType="InkToolbar">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="InkToolbar">
+                        <StackPanel x:Name="Panel" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Orientation="Horizontal"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -17,16 +28,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <InkCanvas x:Name="MainCanvas" Grid.Row="1" Grid.RowSpan="2"/>
-        <control:DropShadowPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" BlurRadius="12" ShadowOpacity="0.2">
-            <StackPanel Orientation="Horizontal">
-                <InkToolbar Grid.Row="1" HorizontalAlignment="Center" Background="White" TargetInkCanvas="{x:Bind MainCanvas}"/>
-            </StackPanel>
-        </control:DropShadowPanel>
-        <control:DropShadowPanel Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" BlurRadius="12" ShadowOpacity="0.2">
-            <Grid Background="LemonChiffon" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <TextBlock Text="夏花 Summer" Foreground="Sienna" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
-            </Grid>
-        </control:DropShadowPanel>
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
+            <InkToolbar Style="{StaticResource InkToolbarStyle1}" Grid.Row="1" HorizontalAlignment="Center" Background="White" TargetInkCanvas="{x:Bind MainCanvas}"/>
+        </StackPanel>
+        <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LemonChiffon">
+            <TextBlock Text="夏花 Summer" Foreground="Sienna" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
+        </Grid>
         <Image x:Name="BackgroundImage" Grid.Row="1" Grid.RowSpan="2" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
     </Grid>
 </Page>
