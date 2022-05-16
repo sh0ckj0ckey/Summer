@@ -5,20 +5,11 @@
     xmlns:local="using:Summer"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:control="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d" RequestedTheme="Light"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     x:Name="SummerMainPage" Loaded="Page_Loaded">
     <Page.Resources>
-        <Style x:Key="InkToolbarStyle1" TargetType="InkToolbar">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="InkToolbar">
-                        <StackPanel x:Name="Panel" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Orientation="Horizontal"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ThemeShadow x:Name="InkBarShadow"/>
     </Page.Resources>
 
     <Grid>
@@ -27,13 +18,24 @@
             <RowDefinition Height="64"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <InkCanvas x:Name="MainCanvas" Grid.Row="1" Grid.RowSpan="2"/>
-        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
-            <InkToolbar Style="{StaticResource InkToolbarStyle1}" Grid.Row="1" HorizontalAlignment="Center" Background="White" TargetInkCanvas="{x:Bind MainCanvas}"/>
-        </StackPanel>
+        <Grid x:Name="BackgroundGrid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Image x:Name="BackgroundImage" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
+        </Grid>
+        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Grid.RowSpan="2" ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="5" Background="Transparent"
+                      Height="{x:Bind BackgroundGrid.ActualHeight,Mode=OneWay}" Width="{x:Bind BackgroundGrid.ActualWidth,Mode=OneWay}"
+                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollMode="Auto" VerticalScrollMode="Auto"
+                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid x:Name="MainGrid" Background="Transparent" Height="{x:Bind BackgroundGrid.ActualHeight,Mode=OneWay}" Width="{x:Bind BackgroundGrid.ActualWidth,Mode=OneWay}">
+                <InkCanvas x:Name="MainCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Grid>
+        </ScrollViewer>
+        <Grid x:Name="InkToolBar" Grid.Row="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+              Shadow="{StaticResource InkBarShadow}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <InkToolbar TargetInkCanvas="{x:Bind MainCanvas}"/>
+        </Grid>
         <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LemonChiffon">
             <TextBlock Text="夏花 Summer" Foreground="Sienna" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
         </Grid>
-        <Image x:Name="BackgroundImage" Grid.Row="1" Grid.RowSpan="2" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
     </Grid>
 </Page>

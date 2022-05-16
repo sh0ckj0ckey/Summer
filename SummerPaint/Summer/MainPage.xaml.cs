@@ -56,8 +56,20 @@ namespace Summer
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            var back = new BitmapImage(new System.Uri("ms-appx:///Assets/Background/background.png"));
-            BackgroundImage.Source = back;
+            try
+            {
+                var back = new BitmapImage(new System.Uri("ms-appx:///Assets/Background/background.png"));
+                BackgroundImage.Source = back;
+
+                MainScrollViewer.Height = BackgroundGrid.ActualHeight;
+                MainScrollViewer.Width = BackgroundGrid.ActualWidth;
+                MainGrid.Height = BackgroundGrid.ActualHeight;
+                MainGrid.Width = BackgroundGrid.ActualWidth;
+
+                InkBarShadow.Receivers.Add(BackgroundImage);
+                InkToolBar.Translation += new System.Numerics.Vector3(0, 0, 32);
+            }
+            catch { }
         }
     }
 }
