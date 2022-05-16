@@ -18,15 +18,15 @@
             <RowDefinition Height="64"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="BackgroundGrid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid x:Name="BackgroundGrid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              SizeChanged="BackgroundGrid_SizeChanged">
             <Image x:Name="BackgroundImage" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
         </Grid>
         <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Grid.RowSpan="2" ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="5" Background="Transparent"
-                      Height="{x:Bind BackgroundGrid.ActualHeight,Mode=OneWay}" Width="{x:Bind BackgroundGrid.ActualWidth,Mode=OneWay}"
-                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollMode="Auto" VerticalScrollMode="Auto"
+                      HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
+                      HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled"
                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Grid x:Name="MainGrid" Background="Transparent" Height="{x:Bind BackgroundGrid.ActualHeight,Mode=OneWay}" Width="{x:Bind BackgroundGrid.ActualWidth,Mode=OneWay}">
+            <Grid x:Name="MainGrid" Background="Transparent">
                 <InkCanvas x:Name="MainCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Grid>
         </ScrollViewer>

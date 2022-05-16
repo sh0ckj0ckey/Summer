@@ -31,10 +31,6 @@ namespace Summer
         public MainPage()
         {
             this.InitializeComponent();
-
-            SetTitleBar();
-
-            MainCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
         }
 
         private void SetTitleBar()
@@ -58,16 +54,45 @@ namespace Summer
         {
             try
             {
+                SetTitleBar();
+
+                MainCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
+
                 var back = new BitmapImage(new System.Uri("ms-appx:///Assets/Background/background.png"));
                 BackgroundImage.Source = back;
 
-                MainScrollViewer.Height = BackgroundGrid.ActualHeight;
-                MainScrollViewer.Width = BackgroundGrid.ActualWidth;
-                MainGrid.Height = BackgroundGrid.ActualHeight;
-                MainGrid.Width = BackgroundGrid.ActualWidth;
+                UpdateCanvasSize(true);
 
                 InkBarShadow.Receivers.Add(BackgroundImage);
                 InkToolBar.Translation += new System.Numerics.Vector3(0, 0, 32);
+            }
+            catch { }
+        }
+
+        private void BackgroundGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            try
+            {
+                UpdateCanvasSize(false);
+            }
+            catch { }
+        }
+
+        private void UpdateCanvasSize(bool forceUpdateCavas)
+        {
+            try
+            {
+                MainScrollViewer.Height = BackgroundGrid.ActualHeight;
+                MainScrollViewer.Width = BackgroundGrid.ActualWidth;
+
+                if (MainGrid.Height < BackgroundGrid.ActualHeight || forceUpdateCavas)
+                {
+                    MainGrid.Height = BackgroundGrid.ActualHeight;
+                }
+                if (MainGrid.Width < BackgroundGrid.ActualWidth || forceUpdateCavas)
+                {
+                    MainGrid.Width = BackgroundGrid.ActualWidth;
+                }
             }
             catch { }
         }
