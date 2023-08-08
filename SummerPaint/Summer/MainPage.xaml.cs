@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Controls;
 using Summer.Views;
+using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -31,12 +32,16 @@ namespace Summer
     public sealed partial class MainPage : Page
     {
         private int _sketchPageIndex = 1;
+
+        private string _appVersion = string.Empty;
         private SettingsService _appSettings = new SettingsService();
 
         public MainPage()
         {
             this.InitializeComponent();
+            SetTitleBarArea();
             SwitchAppTheme();
+            _appVersion = GetAppVersion();
         }
 
         private void TabView_Loaded(object sender, RoutedEventArgs e)
@@ -64,6 +69,11 @@ namespace Summer
         private void SketchesTabView_TabItemsChanged(TabView sender, IVectorChangedEventArgs args)
         {
             SketchPlaceholderImage.Opacity = (sender?.TabItems?.Count ?? 0) > 0 ? 0 : 0.1;
+        }
+
+        private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SwitchAppTheme();
         }
 
         private TabViewItem CreateNewTab()
@@ -155,6 +165,19 @@ namespace Summer
                 }
             }
             catch { }
+        }
+
+        private string GetAppVersion()
+        {
+            try
+            {
+                Package package = Package.Current;
+                PackageId packageId = package.Id;
+                PackageVersion version = packageId.Version;
+                return string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+            }
+            catch (Exception) { }
+            return "";
         }
     }
 }
