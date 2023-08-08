@@ -5,37 +5,61 @@
     xmlns:local="using:Summer"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" RequestedTheme="Light"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    x:Name="SummerMainPage" Loaded="Page_Loaded">
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:cvt="using:Summer.Converters"
+    mc:Ignorable="d" RequestedTheme="Default"
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True" NavigationCacheMode="Required">
     <Page.Resources>
-        <ThemeShadow x:Name="InkBarShadow"/>
+        <cvt:Int2VisibilityConverter x:Key="Int2Vis"/>
     </Page.Resources>
 
-    <Grid>
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="32"/>
-            <RowDefinition Height="64"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="BackgroundGrid" Grid.Row="1" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-              SizeChanged="BackgroundGrid_SizeChanged">
-            <Image x:Name="BackgroundImage" Stretch="UniformToFill" Opacity="0.3" IsHitTestVisible="False"/>
-        </Grid>
-        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1" Grid.RowSpan="2" ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="5" Background="Transparent"
-                      HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
-                      HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled"
-                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Grid x:Name="MainGrid" Background="Transparent">
-                <InkCanvas x:Name="MainCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            </Grid>
-        </ScrollViewer>
-        <Grid x:Name="InkToolBar" Grid.Row="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
-              Shadow="{StaticResource InkBarShadow}" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <InkToolbar TargetInkCanvas="{x:Bind MainCanvas}"/>
-        </Grid>
-        <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="LemonChiffon">
-            <TextBlock Text="夏花 Summer" Foreground="Sienna" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="12"/>
+        <muxc:TabView x:Name="SketchesTabView" Background="Transparent" Grid.Row="1" FontFamily="Segoe Script" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseButtonOverlayMode="Auto" 
+                      AddTabButtonClick="TabView_AddButtonClick" TabCloseRequested="TabView_TabCloseRequested" Loaded="TabView_Loaded" TabItemsChanged="SketchesTabView_TabItemsChanged">
+            <muxc:TabView.TabStripFooter>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4" Margin="4,0,4,0">
+                    <Button Background="Transparent" BorderBrush="Transparent">
+                        <Button.Content>
+                            <muxc:AnimatedIcon Height="16" Width="16">
+                                <muxc:AnimatedIcon.Source>
+                                    <animatedvisuals:AnimatedSettingsVisualSource/>
+                                </muxc:AnimatedIcon.Source>
+                                <muxc:AnimatedIcon.FallbackIconSource>
+                                    <muxc:SymbolIconSource Symbol="Setting"/>
+                                </muxc:AnimatedIcon.FallbackIconSource>
+                            </muxc:AnimatedIcon>
+                        </Button.Content>
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </muxc:TabView.TabStripFooter>
+        </muxc:TabView>
+        <Image x:Name="SketchPlaceholderImage" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="512" Height="512" Opacity="0.1" Margin="0,0,-156,-156" IsHitTestVisible="False">
+            <Image.Source>
+                <BitmapImage UriSource="Assets/Icon/Logo1.png" DecodePixelHeight="512"/>
+            </Image.Source>
+            <Image.OpacityTransition>
+                <ScalarTransition/>
+            </Image.OpacityTransition>
+        </Image>
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Canvas.ZIndex="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
+            <StackPanel x:Name="AppTitleLogo" Margin="12,8,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
+                <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="36" Height="36">
+                    <Image.Source>
+                        <BitmapImage UriSource="Assets/Icon/Logo1.png" DecodePixelHeight="36"/>
+                    </Image.Source>
+                </Image>
+                <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="20" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,2,0,-2"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

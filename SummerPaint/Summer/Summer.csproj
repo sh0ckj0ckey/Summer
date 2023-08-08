@@ -11,7 +11,7 @@
     <AssemblyName>Summer</AssemblyName>
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.20348.0</TargetPlatformVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
@@ -129,10 +129,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\Int2VisibilityConverter.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsService.cs" />
+    <Compile Include="Views\SketchPage.xaml.cs">
+      <DependentUpon>SketchPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -140,62 +145,62 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Background\background.png" />
+    <Content Include="Assets\Background\sketch_background_dark.png" />
+    <Content Include="Assets\Background\sketch_background_light.png" />
     <Content Include="Assets\Icon\Logo1.png" />
     <Content Include="Assets\Icon\Logo2.png" />
-    <Content Include="Assets\LargeTile.scale-100.png" />
-    <Content Include="Assets\LargeTile.scale-125.png" />
-    <Content Include="Assets\LargeTile.scale-150.png" />
-    <Content Include="Assets\LargeTile.scale-200.png" />
-    <Content Include="Assets\LargeTile.scale-400.png" />
-    <Content Include="Assets\SmallTile.scale-100.png" />
-    <Content Include="Assets\SmallTile.scale-125.png" />
-    <Content Include="Assets\SmallTile.scale-150.png" />
-    <Content Include="Assets\SmallTile.scale-200.png" />
-    <Content Include="Assets\SmallTile.scale-400.png" />
-    <Content Include="Assets\SplashScreen.scale-100.png" />
-    <Content Include="Assets\SplashScreen.scale-125.png" />
-    <Content Include="Assets\SplashScreen.scale-150.png" />
-    <Content Include="Assets\SplashScreen.scale-400.png" />
-    <Content Include="Assets\Square150x150Logo.scale-100.png" />
-    <Content Include="Assets\Square150x150Logo.scale-125.png" />
-    <Content Include="Assets\Square150x150Logo.scale-150.png" />
-    <Content Include="Assets\Square150x150Logo.scale-400.png" />
-    <Content Include="Assets\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
-    <Content Include="Assets\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
-    <Content Include="Assets\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
-    <Content Include="Assets\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
-    <Content Include="Assets\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
-    <Content Include="Assets\Square44x44Logo.altform-unplated_targetsize-16.png" />
-    <Content Include="Assets\Square44x44Logo.altform-unplated_targetsize-24.png" />
-    <Content Include="Assets\Square44x44Logo.altform-unplated_targetsize-256.png" />
-    <Content Include="Assets\Square44x44Logo.altform-unplated_targetsize-32.png" />
-    <Content Include="Assets\Square44x44Logo.altform-unplated_targetsize-48.png" />
-    <Content Include="Assets\Square44x44Logo.scale-100.png" />
-    <Content Include="Assets\Square44x44Logo.scale-125.png" />
-    <Content Include="Assets\Square44x44Logo.scale-150.png" />
-    <Content Include="Assets\Square44x44Logo.scale-400.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-16.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-256.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-32.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-48.png" />
-    <Content Include="Assets\StoreLogo.scale-100.png" />
-    <Content Include="Assets\StoreLogo.scale-125.png" />
-    <Content Include="Assets\StoreLogo.scale-150.png" />
-    <Content Include="Assets\StoreLogo.scale-200.png" />
-    <Content Include="Assets\StoreLogo.scale-400.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-100.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-125.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-150.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-400.png" />
     <None Include="Package.StoreAssociation.xml" />
+    <Content Include="Assets\Manifest\LargeTile.scale-100.png" />
+    <Content Include="Assets\Manifest\LargeTile.scale-125.png" />
+    <Content Include="Assets\Manifest\LargeTile.scale-150.png" />
+    <Content Include="Assets\Manifest\LargeTile.scale-200.png" />
+    <Content Include="Assets\Manifest\LargeTile.scale-400.png" />
+    <Content Include="Assets\Manifest\SmallTile.scale-100.png" />
+    <Content Include="Assets\Manifest\SmallTile.scale-125.png" />
+    <Content Include="Assets\Manifest\SmallTile.scale-150.png" />
+    <Content Include="Assets\Manifest\SmallTile.scale-200.png" />
+    <Content Include="Assets\Manifest\SmallTile.scale-400.png" />
+    <Content Include="Assets\Manifest\SplashScreen.scale-100.png" />
+    <Content Include="Assets\Manifest\SplashScreen.scale-125.png" />
+    <Content Include="Assets\Manifest\SplashScreen.scale-150.png" />
+    <Content Include="Assets\Manifest\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Manifest\SplashScreen.scale-400.png" />
+    <Content Include="Assets\Manifest\Square150x150Logo.scale-100.png" />
+    <Content Include="Assets\Manifest\Square150x150Logo.scale-125.png" />
+    <Content Include="Assets\Manifest\Square150x150Logo.scale-150.png" />
+    <Content Include="Assets\Manifest\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Manifest\Square150x150Logo.scale-400.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-unplated_targetsize-16.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-unplated_targetsize-24.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-unplated_targetsize-256.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-unplated_targetsize-32.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.altform-unplated_targetsize-48.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.scale-100.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.scale-125.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.scale-150.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.scale-400.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.targetsize-16.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.targetsize-24.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.targetsize-256.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.targetsize-32.png" />
+    <Content Include="Assets\Manifest\Square44x44Logo.targetsize-48.png" />
+    <Content Include="Assets\Manifest\StoreLogo.scale-100.png" />
+    <Content Include="Assets\Manifest\StoreLogo.scale-125.png" />
+    <Content Include="Assets\Manifest\StoreLogo.scale-150.png" />
+    <Content Include="Assets\Manifest\StoreLogo.scale-200.png" />
+    <Content Include="Assets\Manifest\StoreLogo.scale-400.png" />
+    <Content Include="Assets\Manifest\Wide310x150Logo.scale-100.png" />
+    <Content Include="Assets\Manifest\Wide310x150Logo.scale-125.png" />
+    <Content Include="Assets\Manifest\Wide310x150Logo.scale-150.png" />
+    <Content Include="Assets\Manifest\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\Manifest\Wide310x150Logo.scale-400.png" />
     <Content Include="Properties\Default.rd.xml" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -206,10 +211,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="ThemeResources\ThemeDictionary.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SketchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm">
+      <Version>8.2.1</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.2.13</Version>
+      <Version>6.2.14</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.UI.Xaml">
+      <Version>2.8.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

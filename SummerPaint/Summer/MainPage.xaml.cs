@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Microsoft.UI.Xaml.Controls;
+using Summer.Views;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -28,70 +30,128 @@ namespace Summer
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        private int _sketchPageIndex = 1;
+        private SettingsService _appSettings = new SettingsService();
+
         public MainPage()
         {
             this.InitializeComponent();
+            SwitchAppTheme();
         }
 
-        private void SetTitleBar()
+        private void TabView_Loaded(object sender, RoutedEventArgs e)
         {
-            // 设置标题栏样式
-            var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
-            var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-            titleBar.ButtonBackgroundColor = Colors.Transparent;
-            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-            titleBar.ButtonHoverBackgroundColor = Color.FromArgb(48, 128, 128, 128);
-            titleBar.ButtonPressedBackgroundColor = Color.FromArgb(64, 128, 128, 128);
-            titleBar.ButtonForegroundColor = Colors.Black;
-            titleBar.ButtonHoverForegroundColor = Colors.Black;
-            titleBar.ButtonPressedForegroundColor = Colors.Black;
-            titleBar.ButtonInactiveForegroundColor = Colors.Gray;
-            titleBar.ForegroundColor = Colors.Black;
-        }
-
-        private void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            try
+            if (sender is TabView tabView)
             {
-                SetTitleBar();
-
-                MainCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
-
-                var back = new BitmapImage(new System.Uri("ms-appx:///Assets/Background/background.png"));
-                BackgroundImage.Source = back;
-
-                UpdateCanvasSize(true);
-
-                InkBarShadow.Receivers.Add(BackgroundImage);
-                InkToolBar.Translation += new System.Numerics.Vector3(0, 0, 32);
+                var newItem = CreateNewTab();
+                tabView.TabItems.Add(newItem);
+                tabView.SelectedItem = newItem;
             }
-            catch { }
         }
 
-        private void BackgroundGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void TabView_AddButtonClick(TabView sender, object args)
+        {
+            var newItem = CreateNewTab();
+            sender.TabItems.Add(newItem);
+            sender.SelectedItem = newItem;
+        }
+
+        private void TabView_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+        {
+            sender.TabItems.Remove(args.Tab);
+        }
+
+        private void SketchesTabView_TabItemsChanged(TabView sender, IVectorChangedEventArgs args)
+        {
+            SketchPlaceholderImage.Opacity = (sender?.TabItems?.Count ?? 0) > 0 ? 0 : 0.1;
+        }
+
+        private TabViewItem CreateNewTab()
+        {
+            TabViewItem newItem = new TabViewItem();
+            newItem.Header = $"Sketch {_sketchPageIndex}";
+            _sketchPageIndex++;
+            newItem.IconSource = new Microsoft.UI.Xaml.Controls.SymbolIconSource() { Symbol = Symbol.Pictures };
+            Frame frame = new Frame();
+            frame.Navigate(typeof(SketchPage));
+            newItem.Content = frame;
+            return newItem;
+        }
+
+        private void SetTitleBarArea()
         {
             try
             {
-                UpdateCanvasSize(false);
-            }
-            catch { }
-        }
+                var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+                coreTitleBar.ExtendViewIntoTitleBar = true;
 
-        private void UpdateCanvasSize(bool forceUpdateCavas)
-        {
-            try
-            {
-                MainScrollViewer.Height = BackgroundGrid.ActualHeight;
-                MainScrollViewer.Width = BackgroundGrid.ActualWidth;
+                // 设置为可拖动区域
+                Window.Current.SetTitleBar(AppTitleBar);
 
-                if (MainGrid.Height < BackgroundGrid.ActualHeight || forceUpdateCavas)
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+
+                titleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
+                titleBar.ButtonInactiveForegroundColor = Windows.UI.Colors.Gray;
+
+                // 当窗口激活状态改变时，注册一个handler
+                Window.Current.Activated += (s, e) =>
                 {
-                    MainGrid.Height = BackgroundGrid.ActualHeight;
+                    try
+                    {
+                        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
+                            AppTitleLogo.Opacity = 0.7;
+                        else
+                            AppTitleLogo.Opacity = 1.0;
+                    }
+                    catch { }
+                };
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// 切换应用程序的主题
+        /// </summary>
+        private void SwitchAppTheme()
+        {
+            try
+            {
+                // 设置标题栏颜色
+                bool isLight = _appSettings.AppearanceIndex == 0;
+
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+                titleBar.ButtonBackgroundColor = Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                if (isLight)
+                {
+                    titleBar.ButtonForegroundColor = Colors.Black;
+                    titleBar.ButtonHoverForegroundColor = Colors.Black;
+                    titleBar.ButtonPressedForegroundColor = Colors.Black;
+                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 8, R = 0, G = 0, B = 0 };
+                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 16, R = 0, G = 0, B = 0 };
                 }
-                if (MainGrid.Width < BackgroundGrid.ActualWidth || forceUpdateCavas)
+                else
                 {
-                    MainGrid.Width = BackgroundGrid.ActualWidth;
+                    titleBar.ButtonForegroundColor = Colors.White;
+                    titleBar.ButtonHoverForegroundColor = Colors.White;
+                    titleBar.ButtonPressedForegroundColor = Colors.White;
+                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 16, R = 255, G = 255, B = 255 };
+                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 24, R = 255, G = 255, B = 255 };
+                }
+
+                // 设置应用程序颜色
+                if (Window.Current.Content is FrameworkElement rootElement)
+                {
+                    if (_appSettings.AppearanceIndex == 1)
+                    {
+                        rootElement.RequestedTheme = ElementTheme.Dark;
+                    }
+                    else
+                    {
+                        rootElement.RequestedTheme = ElementTheme.Light;
+                    }
                 }
             }
             catch { }
