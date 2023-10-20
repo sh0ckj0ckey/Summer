@@ -23,7 +23,7 @@
                       AddTabButtonClick="TabView_AddButtonClick" TabCloseRequested="TabView_TabCloseRequested" Loaded="TabView_Loaded" TabItemsChanged="SketchesTabView_TabItemsChanged">
             <muxc:TabView.TabStripFooter>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4" Margin="4,0,4,0">
-                    <Button Background="Transparent" BorderBrush="Transparent">
+                    <Button x:Name="SettingsButton" Background="Transparent" BorderBrush="Transparent" Click="OnClickSettings">
                         <Button.Content>
                             <muxc:AnimatedIcon Height="16" Width="16">
                                 <muxc:AnimatedIcon.Source>
@@ -34,33 +34,31 @@
                                 </muxc:AnimatedIcon.FallbackIconSource>
                             </muxc:AnimatedIcon>
                         </Button.Content>
-                        <Button.Flyout>
-                            <Flyout x:Name="SettingsFlyout" Placement="BottomEdgeAlignedRight">
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <TextBlock Text="Theme" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
-                                    <muxc:RadioButtons MaxColumns="3" SelectedIndex="{x:Bind _appSettings.AppearanceIndex,Mode=TwoWay}" Margin="8,0,0,0" SelectionChanged="OnThemeSelectionChanged">
-                                        <RadioButton Content="&#xE793;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
-                                        <RadioButton Content="&#xE794;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
-                                    </muxc:RadioButtons>
-                                    <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,8,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                                    <TextBlock Text="About" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
-                                    <StackPanel Margin="0,0,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
-                                        <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="42" Height="42">
-                                            <Image.Source>
-                                                <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="42"/>
-                                            </Image.Source>
-                                        </Image>
-                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                                            <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="15" Opacity="0.8" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,-6"/>
-                                            <TextBlock Text="{x:Bind _appVersion}" FontFamily="Segoe Script" FontSize="12" Opacity="0.6" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                                    <TextBlock Text="2023 sh0ckj0ckey." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                                </StackPanel>
-                            </Flyout>
-                        </Button.Flyout>
                     </Button>
+                    <muxc:TeachingTip x:Name="SettingsTeachingTip" Target="{x:Bind SettingsButton}" IsOpen="False" IsLightDismissEnabled="True">
+                        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <TextBlock Text="Theme" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
+                            <muxc:RadioButtons MaxColumns="3" SelectedIndex="{x:Bind _appSettings.AppearanceIndex,Mode=TwoWay}" Margin="8,0,0,0" SelectionChanged="OnThemeSelectionChanged">
+                                <RadioButton Content="&#xE793;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
+                                <RadioButton Content="&#xE794;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
+                            </muxc:RadioButtons>
+                            <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,8,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                            <TextBlock Text="About" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
+                            <StackPanel Margin="0,0,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
+                                <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="42" Height="42">
+                                    <Image.Source>
+                                        <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="42"/>
+                                    </Image.Source>
+                                </Image>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                    <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="15" Opacity="0.8" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,-6"/>
+                                    <TextBlock Text="{x:Bind _appVersion}" FontFamily="Segoe Script" FontSize="12" Opacity="0.6" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                            <TextBlock Text="2023 sh0ckj0ckey." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </muxc:TeachingTip>
                 </StackPanel>
             </muxc:TabView.TabStripFooter>
         </muxc:TabView>

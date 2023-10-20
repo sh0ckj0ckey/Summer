@@ -179,5 +179,14 @@ namespace Summer
             catch (Exception) { }
             return "";
         }
+
+        private void OnClickSettings(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SettingsTeachingTip.IsOpen = true;
+            }
+            catch { }
+        }
     }
 }

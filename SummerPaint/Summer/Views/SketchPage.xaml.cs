@@ -39,8 +39,6 @@ namespace Summer.Views
             this.InitializeComponent();
 
             CommonShadow.Receivers.Add(SketchScrollViewer);
-
-            SketchCanvas.InkPresenter.StrokeInput.StrokeEnded += OnStrokeEnded;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -49,6 +47,17 @@ namespace Summer.Views
             {
                 SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
                 UpdateCanvasSize(true);
+
+                SketchCanvas.InkPresenter.StrokeInput.StrokeEnded += OnStrokeEnded;
+            }
+            catch { }
+        }
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SketchCanvas.InkPresenter.StrokeInput.StrokeEnded -= OnStrokeEnded;
             }
             catch { }
         }

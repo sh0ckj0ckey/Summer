@@ -5,7 +5,7 @@
     xmlns:local="using:Summer.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d" Loaded="Page_Loaded">
+    mc:Ignorable="d" Loaded="Page_Loaded" Unloaded="Page_Unloaded">
     <Page.Resources>
         <ThemeShadow x:Name="CommonShadow"/>
     </Page.Resources>
@@ -33,8 +33,8 @@
             </Grid.ColumnDefinitions>
             <InkToolbar TargetInkCanvas="{x:Bind SketchCanvas}"/>
             <Rectangle Grid.Column="1" Opacity="0.1" Height="20" Width="1" Fill="{ThemeResource ApplicationForegroundThemeBrush}"/>
-            <ToggleButton Grid.Column="2" Content="&#xED5F;" Margin="4,0,4,0" IsChecked="False" Background="Transparent" BorderBrush="Transparent" Height="34" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand"/>
-            <ToggleButton Grid.Column="3" Content="&#xF157;" Margin="0,0,8,0" IsChecked="False" Background="Transparent" BorderBrush="Transparent" Height="34" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec"/>
+            <ToggleButton Grid.Column="2" Content="&#xED5F;" Margin="4,0,4,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand"/>
+            <ToggleButton Grid.Column="3" Content="&#xF157;" Margin="0,0,8,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec"/>
         </Grid>
     </Grid>
 </Page>
