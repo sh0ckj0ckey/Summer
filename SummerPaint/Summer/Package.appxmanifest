@@ -9,12 +9,12 @@
   <Identity
     Name="22189NoMewing.25114A398B0DE"
     Publisher="CN=E6D8FAFA-3EF4-4E47-B885-52144C67BFF5"
-    Version="1.0.0.0" />
+    Version="1.1.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="078aed0d-b4ae-4213-9784-d7744ad739bb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Summer - easy sketch</DisplayName>
+    <DisplayName>ms-resource:PackageName</DisplayName>
     <PublisherDisplayName>No Mewing</PublisherDisplayName>
     <Logo>Assets\Manifest\StoreLogo.png</Logo>
   </Properties>
@@ -32,19 +32,19 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="Summer.App">
       <uap:VisualElements
-        DisplayName="Summer"
+        DisplayName="ms-resource:DisplayName"
         Square150x150Logo="Assets\Manifest\Square150x150Logo.png"
         Square44x44Logo="Assets\Manifest\Square44x44Logo.png"
-        Description="Summer is coming.."
-        BackgroundColor="#5b2800">
-        <uap:DefaultTile Wide310x150Logo="Assets\Manifest\Wide310x150Logo.png" ShortName="Summer" Square71x71Logo="Assets\Manifest\SmallTile.png" Square310x310Logo="Assets\Manifest\LargeTile.png">
+        Description="ms-resource:DisplayDesc"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Manifest\Wide310x150Logo.png" Square71x71Logo="Assets\Manifest\SmallTile.png" Square310x310Logo="Assets\Manifest\LargeTile.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo"/>
             <uap:ShowOn Tile="square310x310Logo"/>
             <uap:ShowOn Tile="wide310x150Logo"/>
           </uap:ShowNameOnTiles>
         </uap:DefaultTile >
-        <uap:SplashScreen Image="Assets\Manifest\SplashScreen.png"  BackgroundColor="#5b2800"/>
+        <uap:SplashScreen Image="Assets\Manifest\SplashScreen.png"  BackgroundColor="transparent"/>
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="landscape"/>
           <uap:Rotation Preference="portrait"/>

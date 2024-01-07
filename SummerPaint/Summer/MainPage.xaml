@@ -16,14 +16,19 @@
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <muxc:TabView x:Name="SketchesTabView" Grid.Row="1" Background="Transparent" FontFamily="Segoe Script" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CloseButtonOverlayMode="Auto" 
+        <muxc:TabView x:Name="SketchesTabView" Grid.Row="1" Background="Transparent" CloseButtonOverlayMode="Auto" FontFamily="Segoe Script" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       AddTabButtonClick="TabView_AddButtonClick" TabCloseRequested="TabView_TabCloseRequested" Loaded="TabView_Loaded" TabItemsChanged="SketchesTabView_TabItemsChanged">
             <muxc:TabView.TabStripFooter>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4" Margin="4,0,4,0">
-                    <Button x:Name="SettingsButton" Background="Transparent" BorderBrush="Transparent" Click="OnClickSettings">
+                    <ToggleButton x:Name="TopmostButton" Height="36" Background="Transparent" BorderBrush="Transparent" Checked="OnCheckTopmost" Unchecked="OnUncheckTopmost">
+                        <ToggleButton.Content>
+                            <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE141;" FontSize="14"/>
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    <Button x:Name="SettingsButton" Height="36" Background="Transparent" BorderBrush="Transparent" Click="OnClickSettings">
                         <Button.Content>
                             <muxc:AnimatedIcon Height="16" Width="16">
                                 <muxc:AnimatedIcon.Source>
@@ -47,7 +52,7 @@
                             <StackPanel Margin="0,0,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
                                 <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="42" Height="42">
                                     <Image.Source>
-                                        <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="42"/>
+                                        <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="84"/>
                                     </Image.Source>
                                 </Image>
                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
@@ -56,7 +61,7 @@
                                 </StackPanel>
                             </StackPanel>
                             <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                            <TextBlock Text="2023 sh0ckj0ckey." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text="©2024 NoMewing." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                     </muxc:TeachingTip>
                 </StackPanel>
@@ -74,7 +79,7 @@
             <StackPanel x:Name="AppTitleLogo" Margin="12,8,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
                 <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="36" Height="36">
                     <Image.Source>
-                        <BitmapImage UriSource="Assets/Icon/Logo1.png" DecodePixelHeight="36"/>
+                        <BitmapImage UriSource="Assets/Icon/Logo1.png" DecodePixelHeight="72"/>
                     </Image.Source>
                 </Image>
                 <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="20" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,2,0,-2"/>

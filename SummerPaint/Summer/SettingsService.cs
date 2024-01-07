@@ -10,6 +10,9 @@ namespace Summer
 {
     public class SettingsService : ObservableObject
     {
+        private static Lazy<SettingsService> _lazyVM = new Lazy<SettingsService>(() => new SettingsService());
+        public static SettingsService Instance => _lazyVM.Value;
+
         private const string SETTING_NAME_APPEARANCEINDEX = "AppearanceIndex";
 
         private ApplicationDataContainer _localSettings = ApplicationData.Current.LocalSettings;

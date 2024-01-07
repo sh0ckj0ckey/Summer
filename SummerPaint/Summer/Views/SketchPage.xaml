@@ -24,17 +24,26 @@
             </Grid>
         </ScrollViewer>
         <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Shadow="{StaticResource CommonShadow}" Translation="0,0,32" 
-              CornerRadius="8" Margin="0,12,0,0" HorizontalAlignment="Center" VerticalAlignment="Top">
+              Height="44" CornerRadius="8" Margin="0,12,0,0" HorizontalAlignment="Center" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <InkToolbar TargetInkCanvas="{x:Bind SketchCanvas}"/>
+            <InkToolbar TargetInkCanvas="{x:Bind SketchCanvas}" VerticalAlignment="Top"/>
             <Rectangle Grid.Column="1" Opacity="0.1" Height="20" Width="1" Fill="{ThemeResource ApplicationForegroundThemeBrush}"/>
-            <ToggleButton Grid.Column="2" Content="&#xED5F;" Margin="4,0,4,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand"/>
-            <ToggleButton Grid.Column="3" Content="&#xF157;" Margin="0,0,8,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec"/>
+            <ToggleButton Grid.Column="2" Content="&#xED5F;" Margin="4,0,4,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand"/>
+            <ToggleButton Grid.Column="3" Content="&#xF157;" Margin="0,0,4,0" FontSize="16" Padding="0" Width="36" Height="36" IsChecked="False" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec"/>
+        </Grid>
+        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Shadow="{StaticResource CommonShadow}" Translation="0,0,32" 
+              Height="44" CornerRadius="8" Margin="0,12,16,0" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="&#xE105;" Margin="4,0,4,0" FontSize="16" Padding="0" Width="36" Height="36" Background="Transparent" BorderBrush="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="OnClickSave"/>
         </Grid>
     </Grid>
 </Page>

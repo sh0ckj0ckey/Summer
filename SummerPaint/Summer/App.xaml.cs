@@ -30,6 +30,7 @@ namespace Summer
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.UnhandledException += (s, e) => { e.Handled = true; };
         }
 
         /// <summary>

@@ -34,7 +34,7 @@ namespace Summer
         private int _sketchPageIndex = 1;
 
         private string _appVersion = string.Empty;
-        private SettingsService _appSettings = new SettingsService();
+        private SettingsService _appSettings = SettingsService.Instance;
 
         public MainPage()
         {
@@ -105,17 +105,17 @@ namespace Summer
                 titleBar.ButtonInactiveForegroundColor = Windows.UI.Colors.Gray;
 
                 // 当窗口激活状态改变时，注册一个handler
-                Window.Current.Activated += (s, e) =>
-                {
-                    try
-                    {
-                        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
-                            AppTitleLogo.Opacity = 0.7;
-                        else
-                            AppTitleLogo.Opacity = 1.0;
-                    }
-                    catch { }
-                };
+                //Window.Current.Activated += (s, e) =>
+                //{
+                //    try
+                //    {
+                //        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
+                //            AppTitleLogo.Opacity = 0.7;
+                //        else
+                //            AppTitleLogo.Opacity = 1.0;
+                //    }
+                //    catch { }
+                //};
             }
             catch { }
         }
@@ -187,6 +187,21 @@ namespace Summer
                 SettingsTeachingTip.IsOpen = true;
             }
             catch { }
+        }
+
+        private async void OnCheckTopmost(object sender, RoutedEventArgs e)
+        {
+            if (ApplicationView.GetForCurrentView().IsViewModeSupported(ApplicationViewMode.CompactOverlay))
+            {
+                ViewModePreferences compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
+                compactOptions.CustomSize = new Windows.Foundation.Size(960, 740);
+                _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
+            }
+        }
+
+        private async void OnUncheckTopmost(object sender, RoutedEventArgs e)
+        {
+            _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.Default);
         }
     }
 }

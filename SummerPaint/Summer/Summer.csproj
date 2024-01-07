@@ -26,7 +26,7 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageDir>C:\Users\Administrator\Desktop\</AppxPackageDir>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <PackageCertificateThumbprint>04D8CC40A318924D78CF923787628717EAA8188E</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>5A0BF8439709A49B4461A62D501B413C3C6D9293</PackageCertificateThumbprint>
     <PackageCertificateKeyFile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -201,6 +201,8 @@
     <Content Include="Assets\Manifest\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Manifest\Wide310x150Logo.scale-400.png" />
     <Content Include="Properties\Default.rd.xml" />
+    <PRIResource Include="Strings\zh-CN\Resources.resw" />
+    <PRIResource Include="Strings\en-US\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -229,6 +231,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
       <Version>2.8.5</Version>
+    </PackageReference>
+    <PackageReference Include="Win2D.uwp">
+      <Version>1.27.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />

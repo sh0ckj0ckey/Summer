@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Display;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
@@ -215,6 +221,31 @@ namespace Summer.Views
             polygon.Stroke = brush;
             polygon.StrokeThickness = 2;
             ShapesCanvas.Children.Add(polygon);
+        }
+
+        private async void OnClickSave(object sender, RoutedEventArgs e)
+        {
+            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+            savePicker.FileTypeChoices.Add("PNG", new List<string>() { ".png" });
+            savePicker.SuggestedFileName = "Summer Sketch";
+
+            Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
+            if (file != null)
+            {
+                CanvasDevice device = CanvasDevice.GetSharedDevice();
+                CanvasRenderTarget renderTarget = new CanvasRenderTarget(device, (int)SketchCanvas.ActualWidth, (int)SketchCanvas.ActualHeight, 96);
+                using (var ds = renderTarget.CreateDrawingSession())
+                {
+                    ds.Clear(SettingsService.Instance.AppearanceIndex == 1 ? Color.FromArgb(255, 46, 46, 46) : Colors.White);
+                    ds.DrawInk(SketchCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                }
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    await renderTarget.SaveAsync(fileStream, CanvasBitmapFileFormat.Png, 1f);
+                }
+            }
         }
     }
 }
