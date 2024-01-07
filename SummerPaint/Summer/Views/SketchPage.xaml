@@ -19,7 +19,6 @@
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled"
                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid x:Name="SketchGrid" Background="Transparent">
-                <Canvas x:Name="ShapesCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 <InkCanvas x:Name="SketchCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </Grid>
         </ScrollViewer>
