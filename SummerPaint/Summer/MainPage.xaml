@@ -14,8 +14,6 @@
 
     <Page.Resources>
         <ThemeShadow x:Name="CommonShadow"/>
-
-        <cvt:Int2VisibilityConverter x:Key="Int2Vis"/>
     </Page.Resources>
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
