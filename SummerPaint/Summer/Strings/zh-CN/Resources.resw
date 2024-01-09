@@ -123,7 +123,16 @@
   <data name="DisplayName" xml:space="preserve">
     <value>夏墨</value>
   </data>
+  <data name="FingerTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>使用手指绘画</value>
+  </data>
   <data name="PackageName" xml:space="preserve">
     <value>夏墨 - 纯粹草图</value>
+  </data>
+  <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>导入图片</value>
+  </data>
+  <data name="ShapeTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>形状识别</value>
   </data>
 </root>
