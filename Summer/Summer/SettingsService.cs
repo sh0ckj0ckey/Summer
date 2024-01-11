@@ -10,6 +10,7 @@ namespace Summer
         public static SettingsService Instance => _lazyVM.Value;
 
         private const string SETTING_NAME_APPEARANCEINDEX = "AppearanceIndex";
+        private const string SETTING_NAME_CANVASINDEX = "CanvasIndex";
 
         private ApplicationDataContainer _localSettings = ApplicationData.Current.LocalSettings;
 
@@ -49,6 +50,49 @@ namespace Summer
             {
                 SetProperty(ref _appearanceIndex, value);
                 ApplicationData.Current.LocalSettings.Values[SETTING_NAME_APPEARANCEINDEX] = _appearanceIndex;
+            }
+        }
+
+        // 设置画板底图纹理 0-纸质 1-纯色 2-透明
+        private int _canvasIndex = -1;
+        public int CanvasIndex
+        {
+            get
+            {
+                try
+                {
+                    if (_canvasIndex < 0)
+                    {
+                        if (_localSettings.Values[SETTING_NAME_CANVASINDEX] == null)
+                        {
+                            _canvasIndex = 0;
+                        }
+                        else if (_localSettings.Values[SETTING_NAME_CANVASINDEX]?.ToString() == "0")
+                        {
+                            _canvasIndex = 0;
+                        }
+                        else if (_localSettings.Values[SETTING_NAME_CANVASINDEX]?.ToString() == "1")
+                        {
+                            _canvasIndex = 1;
+                        }
+                        else if (_localSettings.Values[SETTING_NAME_CANVASINDEX]?.ToString() == "2")
+                        {
+                            _canvasIndex = 2;
+                        }
+                        else
+                        {
+                            _canvasIndex = 0;
+                        }
+                    }
+                }
+                catch { }
+                if (_canvasIndex < 0) _canvasIndex = 0;
+                return _canvasIndex < 0 ? 0 : _canvasIndex;
+            }
+            set
+            {
+                SetProperty(ref _canvasIndex, value);
+                ApplicationData.Current.LocalSettings.Values[SETTING_NAME_CANVASINDEX] = _canvasIndex;
             }
         }
 
