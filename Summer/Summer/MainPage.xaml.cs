@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
@@ -38,6 +39,8 @@ namespace Summer
             _appVersion = GetAppVersion();
 
             CommonShadow.Receivers.Add(ShadowReceiverGrid);
+
+            App.OnWindowSizeChanged += OnWindowSizeChanged;
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -48,8 +51,23 @@ namespace Summer
                 UpdateCanvasSize(true);
 
                 SketchCanvas.InkPresenter.StrokeInput.StrokeEnded += OnStrokeEnded;
+
+                SketchScrollViewer.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (o, d) =>
+                {
+                    try
+                    {
+                        CanvasZoomFactorTextBlock.Text = ((SketchScrollViewer.ZoomFactor * 100)).ToString("f0");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -58,7 +76,10 @@ namespace Summer
             {
                 SketchCanvas.InkPresenter.StrokeInput.StrokeEnded -= OnStrokeEnded;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
         private void BackgroundGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -66,7 +87,10 @@ namespace Summer
             {
                 UpdateCanvasSize(false);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         private void UpdateCanvasSize(bool forceUpdateCavas)
@@ -85,7 +109,10 @@ namespace Summer
                     SketchGrid.Width = CanvasGrid.ActualWidth;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         private void OnCheckDrawWithHand(object sender, RoutedEventArgs e)
@@ -269,10 +296,16 @@ namespace Summer
                         else
                             AppTitleLogo.Opacity = 1.0;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
                 };
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         /// <summary>
@@ -319,7 +352,56 @@ namespace Summer
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private void OnClickImportPicture(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        #region 右侧设置栏
+
+        /// <summary>
+        /// 应用程序窗口尺寸变化，更新全屏按钮状态
+        /// </summary>
+        private void OnWindowSizeChanged()
+        {
+            FullscreenButton.IsChecked = ApplicationView.GetForCurrentView().IsFullScreenMode;
+        }
+
+        /// <summary>
+        /// 全屏
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCheckFullscreen(object sender, RoutedEventArgs e)
+        {
+            var view = ApplicationView.GetForCurrentView();
+            if (!view.IsFullScreenMode)
+            {
+                view.TryEnterFullScreenMode();
+                VisualStateManager.GoToState(this, "FullScreenState", false);
+            }
+        }
+
+        /// <summary>
+        /// 退出全屏
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnUncheckFullscreen(object sender, RoutedEventArgs e)
+        {
+            var view = ApplicationView.GetForCurrentView();
+            if (view.IsFullScreenMode)
+            {
+                view.ExitFullScreenMode();
+                ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.Auto;
+                VisualStateManager.GoToState(this, "NormalState", false);
+            }
         }
 
         /// <summary>
@@ -334,6 +416,7 @@ namespace Summer
                 ViewModePreferences compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
                 compactOptions.CustomSize = new Windows.Foundation.Size(960, 740);
                 _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
+                VisualStateManager.GoToState(this, "PiPState", false);
             }
         }
 
@@ -345,15 +428,8 @@ namespace Summer
         private async void OnUncheckTopmost(object sender, RoutedEventArgs e)
         {
             _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.Default);
+            VisualStateManager.GoToState(this, "NormalState", false);
         }
-
-        #region Settings
-
-        // 应用程序版本号
-        private string _appVersion = string.Empty;
-
-        // 设置
-        private SettingsService _appSettings = SettingsService.Instance;
 
         /// <summary>
         /// 点击打开设置
@@ -366,8 +442,38 @@ namespace Summer
             {
                 SettingsTeachingTip.IsOpen = true;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
+
+        /// <summary>
+        /// 点击关闭设置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickCloseSettings(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SettingsTeachingTip.IsOpen = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Settings
+
+        // 应用程序版本号
+        private string _appVersion = string.Empty;
+
+        // 设置
+        private SettingsService _appSettings = SettingsService.Instance;
 
         /// <summary>
         /// 点击切换主题
@@ -392,25 +498,48 @@ namespace Summer
                 PackageVersion version = packageId.Version;
                 return string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
             }
-            catch (Exception) { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
             return "";
         }
 
         #endregion
 
-        private void OnClickFullscreen(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 重置画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickResetCanvasZoom(object sender, RoutedEventArgs e)
         {
-
+            //double zoomCenterX = SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2);
+            //double zoomCenterY = SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2);
+            SketchScrollViewer.ChangeView(0, 0, 1.0f);
         }
 
-        private void OnClickImportPicture(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 缩小画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickCanvasZoomOut(object sender, RoutedEventArgs e)
         {
-
+            float currentZoom = SketchScrollViewer.ZoomFactor;
+            SketchScrollViewer.ChangeView(null, null, Math.Max(1, (currentZoom - 0.5f)));
         }
 
-        private void OnClickAbout(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 增大画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickCanvasZoomIn(object sender, RoutedEventArgs e)
         {
-
+            float currentZoom = SketchScrollViewer.ZoomFactor;
+            SketchScrollViewer.ChangeView(null, null, Math.Min(5, (currentZoom + 0.5f)));
         }
     }
 }

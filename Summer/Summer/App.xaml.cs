@@ -12,6 +12,8 @@ namespace Summer
     /// </summary>
     sealed partial class App : Application
     {
+        public static event Action OnWindowSizeChanged;
+
         /// <summary>
         /// 初始化单一实例应用程序对象。这是执行的创作代码的第一行，
         /// 已执行，逻辑上等同于 main() 或 WinMain()。
@@ -21,6 +23,12 @@ namespace Summer
             this.InitializeComponent();
             this.Suspending += OnSuspending;
             this.UnhandledException += (s, e) => { e.Handled = true; };
+        }
+
+        protected override void OnWindowCreated(WindowCreatedEventArgs args)
+        {
+            args.Window.CoreWindow.SizeChanged += (coreWindow, sizeChangedArgs) => { OnWindowSizeChanged?.Invoke(); };
+            base.OnWindowCreated(args);
         }
 
         /// <summary>

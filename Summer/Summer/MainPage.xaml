@@ -33,17 +33,14 @@
         <!--中央绘画区-->
         <Grid x:Name="CanvasGrid" Grid.Column="1" Grid.Row="1" SizeChanged="BackgroundGrid_SizeChanged" CornerRadius="4" 
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Shadow="{ThemeResource CommonShadow}" Translation="0,0,32">
-            <!--<Grid.Background>
+            <Grid.Background>
                 <ImageBrush ImageSource="{ThemeResource SKETCHBK_IMG}" Stretch="UniformToFill" Opacity="0.3"/>
-            </Grid.Background>-->
-            <ScrollViewer x:Name="SketchScrollViewer" ZoomMode="Enabled" MinZoomFactor="0.1" MaxZoomFactor="5" Background="Transparent"
+            </Grid.Background>
+            <ScrollViewer x:Name="SketchScrollViewer" ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="5" Background="Transparent"
                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
                           HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled"
                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid x:Name="SketchGrid" CornerRadius="4">
-                    <Grid.Background>
-                        <ImageBrush ImageSource="{ThemeResource SKETCHBK_IMG}" Stretch="UniformToFill" Opacity="0.3"/>
-                    </Grid.Background>
                     <InkCanvas x:Name="SketchCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </Grid>
             </ScrollViewer>
@@ -70,27 +67,28 @@
                 <ToggleButton Content="&#xE91B;" FontSize="16" Padding="0" Height="38" Width="38" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="OnClickImportPicture" x:Uid="PictureTip"/>
             </StackPanel>
             <StackPanel Spacing="8" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button FontSize="14" Padding="0" Height="38" Width="64" FontFamily="Segoe Script" Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center">
+                <Button FontSize="14" Padding="0" Height="38" Width="64" FontFamily="Segoe Script" Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center"
+                        Click="OnClickResetCanvasZoom">
                     <TextBlock>
-                        <Run Text="100"/>
+                        <Run x:Name="CanvasZoomFactorTextBlock" Text="100"/>
                         <Run Text="%"/>
                     </TextBlock>
                 </Button>
-                <Button Content="&#xE12E;" FontSize="16" Padding="0" Height="38" Width="38" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                <Button Content="&#xE71F;" FontSize="16" Padding="0" Height="38" Width="38" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                <Button Content="&#xE71F;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomOut" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                <Button Content="&#xE12E;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomIn" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                 <Border Height="26" Width="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                <Button Content="&#xE105;" FontSize="16" Padding="0" Width="38" Height="38" FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" Click="OnClickSave"/>
+                <Button Content="&#xE105;" FontSize="16" Padding="0" Width="38" Height="38" Click="OnClickSave" FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
-        <!--右侧菜单栏-->
+        <!--右侧设置栏-->
         <Grid Grid.Column="2" Grid.Row="1" Padding="0,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Spacing="8" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
-                <Button x:Name="FullscreenButton" Height="38" Width="38" Padding="0" HorizontalAlignment="Center" Click="OnClickFullscreen">
-                    <Button.Content>
+                <ToggleButton x:Name="FullscreenButton" Height="38" Width="38" Padding="0" HorizontalAlignment="Center" Checked="OnCheckFullscreen" Unchecked="OnUncheckFullscreen">
+                    <ToggleButton.Content>
                         <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE1D9;" FontSize="14"/>
-                    </Button.Content>
-                </Button>
+                    </ToggleButton.Content>
+                </ToggleButton>
                 <ToggleButton x:Name="TopmostButton" Height="38" Width="38" Padding="0" HorizontalAlignment="Center" Checked="OnCheckTopmost" Unchecked="OnUncheckTopmost">
                     <ToggleButton.Content>
                         <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE141;" FontSize="14"/>
@@ -99,11 +97,6 @@
             </StackPanel>
 
             <StackPanel Spacing="8" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                <Button x:Name="AboutButton" Height="38" Width="38" Padding="0" HorizontalAlignment="Center" Click="OnClickAbout">
-                    <Button.Content>
-                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE946;" FontSize="14"/>
-                    </Button.Content>
-                </Button>
                 <Button x:Name="SettingsButton" Height="38" Width="38" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="OnClickSettings">
                     <Button.Content>
                         <muxc:AnimatedIcon Height="16" Width="16">
@@ -119,28 +112,33 @@
             </StackPanel>
             
             <muxc:TeachingTip x:Name="SettingsTeachingTip" Target="{x:Bind SettingsButton}" IsOpen="False" IsLightDismissEnabled="True">
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <TextBlock Text="Theme" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
-                    <muxc:RadioButtons MaxColumns="3" SelectedIndex="{x:Bind _appSettings.AppearanceIndex,Mode=TwoWay}" Margin="8,0,0,0" SelectionChanged="OnThemeSelectionChanged">
-                        <RadioButton Content="&#xE793;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
-                        <RadioButton Content="&#xE794;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
-                    </muxc:RadioButtons>
-                    <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,8,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                    <TextBlock Text="About" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
-                    <StackPanel Margin="0,0,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
-                        <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="42" Height="42">
-                            <Image.Source>
-                                <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="84"/>
-                            </Image.Source>
-                        </Image>
-                        <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                            <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="15" Opacity="0.8" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,-6"/>
-                            <TextBlock Text="{x:Bind _appVersion}" FontFamily="Segoe Script" FontSize="12" Opacity="0.6" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                <Grid Background="Transparent">
+                    <StackPanel Orientation="Vertical" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <TextBlock Text="Settings" FontFamily="Segoe Print" FontWeight="Bold" FontSize="16" Margin="4,0,0,0"/>
+                        <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,4,4" Opacity="0.05" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                        <TextBlock Text="Theme" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
+                        <muxc:RadioButtons MaxColumns="3" SelectedIndex="{x:Bind _appSettings.AppearanceIndex,Mode=TwoWay}" Margin="8,0,0,0" SelectionChanged="OnThemeSelectionChanged">
+                            <RadioButton Content="&#xE793;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
+                            <RadioButton Content="&#xE794;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="18"/>
+                        </muxc:RadioButtons>
+                        <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,8,4,4" Opacity="0.05" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                        <TextBlock Text="About" FontFamily="Segoe Print" FontSize="15" Margin="4,0,0,0"/>
+                        <StackPanel Margin="0,0,0,0" Opacity="1" Orientation="Horizontal" VerticalAlignment="Center" IsHitTestVisible="False">
+                            <Image HorizontalAlignment="Left" VerticalAlignment="Center" Width="42" Height="42">
+                                <Image.Source>
+                                    <BitmapImage UriSource="Assets/Icon/Logo2.png" DecodePixelHeight="84"/>
+                                </Image.Source>
+                            </Image>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="15" Opacity="0.8" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,-6"/>
+                                <TextBlock Text="{x:Bind _appVersion}" FontFamily="Segoe Script" FontSize="12" Opacity="0.6" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            </StackPanel>
                         </StackPanel>
+                        <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,4,4" Opacity="0.05" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
+                        <TextBlock Text="©2024 NoMewing." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
-                    <Border Height="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                    <TextBlock Text="©2024 NoMewing." FontFamily="Segoe Script" FontSize="10" Opacity="0.5" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                </StackPanel>
+                    <Button Content="&#xEDAE;" Margin="0,0,0,0" FontSize="14" Padding="6" BorderBrush="Transparent" Background="Transparent" FontFamily="{ThemeResource SymbolThemeFontFamily}" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnClickCloseSettings"/>
+                </Grid>
             </muxc:TeachingTip>
         </Grid>
 
@@ -155,5 +153,28 @@
                 <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="18" FontWeight="Bold" CharacterSpacing="40" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4,0,0,0"/>
             </StackPanel>
         </Grid>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="PlayerModeStates">
+                <VisualState x:Name="NormalState">
+                    <VisualState.Setters>
+                        <Setter Target="FullscreenButton.Visibility" Value="Visible"/>
+                        <Setter Target="TopmostButton.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="FullScreenState">
+                    <VisualState.Setters>
+                        <Setter Target="FullscreenButton.Visibility" Value="Visible"/>
+                        <Setter Target="TopmostButton.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PiPState">
+                    <VisualState.Setters>
+                        <Setter Target="FullscreenButton.Visibility" Value="Collapsed"/>
+                        <Setter Target="TopmostButton.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
