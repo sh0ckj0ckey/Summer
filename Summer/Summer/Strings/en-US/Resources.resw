@@ -130,9 +130,21 @@
     <value>Summer - easy sketch</value>
   </data>
   <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Import a picture</value>
+    <value>Import a picture as background</value>
+  </data>
+  <data name="SaveTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Save the sketch</value>
   </data>
   <data name="ShapeTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Recognize shapes</value>
+  </data>
+  <data name="ZoomInTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom In</value>
+  </data>
+  <data name="ZoomOutTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Zoom Out</value>
+  </data>
+  <data name="ZoomResetTip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Click to reset to 100%</value>
   </data>
 </root>

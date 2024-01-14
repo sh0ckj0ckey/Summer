@@ -56,28 +56,21 @@
             <StackPanel Spacing="8" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <ToggleButton Content="&#xED5F;" FontSize="16" Padding="0" Width="38" Height="38" IsChecked="False" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand" x:Uid="FingerTip"/>
                 <ToggleButton Content="&#xF128;" FontSize="16" Padding="0" Width="38" Height="38" IsChecked="False" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec" x:Uid="ShapeTip"/>
-                <Button Content="&#xED62;" FontSize="16" Padding="0" Height="38" Width="38" FontFamily="{ThemeResource SymbolThemeFontFamily}">
-                    <Button.Flyout>
-                        <Flyout>
-                            <TextBlock Text="确定清除吗"/>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
                 <Border Height="26" Width="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
                 <ToggleButton Content="&#xE91B;" FontSize="16" Padding="0" Height="38" Width="38" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="OnClickImportPicture" x:Uid="PictureTip"/>
             </StackPanel>
             <StackPanel Spacing="8" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Button FontSize="14" Padding="0" Height="38" Width="64" FontFamily="Segoe Script" Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center"
-                        Click="OnClickResetCanvasZoom">
+                        Click="OnClickResetCanvasZoom" x:Uid="ZoomResetTip">
                     <TextBlock>
                         <Run x:Name="CanvasZoomFactorTextBlock" Text="100"/>
                         <Run Text="%"/>
                     </TextBlock>
                 </Button>
-                <Button Content="&#xE71F;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomOut" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                <Button Content="&#xE12E;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomIn" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                <Button x:Name="ZoomOutButton" Content="&#xE71F;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomOut" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ZoomOutTip"/>
+                <Button x:Name="ZoomInButton" Content="&#xE12E;" FontSize="16" Padding="0" Height="38" Width="38" Click="OnClickCanvasZoomIn" FontFamily="{ThemeResource SymbolThemeFontFamily}" x:Uid="ZoomInTip"/>
                 <Border Height="26" Width="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                <Button Content="&#xE105;" FontSize="16" Padding="0" Width="38" Height="38" Click="OnClickSave" FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center"/>
+                <Button Content="&#xE105;" FontSize="16" Padding="0" Width="38" Height="38" Click="OnClickSave" FontFamily="{ThemeResource SymbolThemeFontFamily}" VerticalAlignment="Center" x:Uid="SaveTip"/>
             </StackPanel>
         </Grid>
 
