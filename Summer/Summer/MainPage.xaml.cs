@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -15,6 +17,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
@@ -112,38 +115,6 @@ namespace Summer
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
-            }
-        }
-
-        private void OnCheckDrawWithHand(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleButton toggleButton)
-            {
-                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
-            }
-        }
-
-        private void OnUncheckDrawWithHand(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleButton toggleButton)
-            {
-                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
-            }
-        }
-
-        private void OnCheckShapeRec(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleButton toggleButton)
-            {
-                _recShapes = true;
-            }
-        }
-
-        private void OnUncheckShapeRec(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleButton toggleButton)
-            {
-                _recShapes = false;
             }
         }
 
@@ -358,10 +329,106 @@ namespace Summer
             }
         }
 
-        private void OnClickImportPicture(object sender, RoutedEventArgs e)
-        {
+        #region 底部功能栏
 
+        /// <summary>
+        /// 启用手指触摸绘画
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCheckDrawWithHand(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton toggleButton)
+            {
+                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
+            }
         }
+
+        /// <summary>
+        /// 关闭手指绘画
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnUncheckDrawWithHand(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton toggleButton)
+            {
+                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+            }
+        }
+
+        /// <summary>
+        /// 开启形状识别
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCheckShapeRec(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton toggleButton)
+            {
+                _recShapes = true;
+            }
+        }
+
+        /// <summary>
+        /// 关闭形状识别
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnUncheckShapeRec(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton toggleButton)
+            {
+                _recShapes = false;
+            }
+        }
+
+        /// <summary>
+        /// 开启底图
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void OnCheckPictureBackground(object sender, RoutedEventArgs e)
+        {
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    await bitmapImage.SetSourceAsync(stream);
+                    PictureBackgroundImage.Source = bitmapImage;
+                    PictureBackgroundImage.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                if (sender is ToggleButton toggleButton)
+                {
+                    toggleButton.IsChecked = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 关闭底图
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnUncheckPictureBackground(object sender, RoutedEventArgs e)
+        {
+            PictureBackgroundImage.Visibility = Visibility.Collapsed;
+            PictureBackgroundImage.Source = null;
+        }
+
+        #endregion
 
         #region 右侧设置栏
 
@@ -465,14 +532,16 @@ namespace Summer
             }
         }
 
-        #endregion
+        #region 设置
 
-        #region Settings
-
-        // 应用程序版本号
+        /// <summary>
+        /// 应用程序版本号
+        /// </summary>
         private string _appVersion = string.Empty;
 
-        // 设置
+        /// <summary>
+        /// 设置
+        /// </summary>
         private SettingsService _appSettings = SettingsService.Instance;
 
         /// <summary>
@@ -505,6 +574,8 @@ namespace Summer
 
             return "";
         }
+
+        #endregion
 
         #endregion
 
