@@ -2,11 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.Resources;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -290,6 +293,8 @@ namespace Summer
         /// </summary>
         private readonly InkAnalyzer _shapesAnalyzer = new InkAnalyzer();
 
+        private readonly InkStrokeBuilder _strokeBuilder = new InkStrokeBuilder();
+
         private readonly SolidColorBrush _shapeLightBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 0));
         private readonly SolidColorBrush _shapeDarkBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 255, 255));
 
@@ -329,7 +334,9 @@ namespace Summer
                             {
                                 if (shape.DrawingKind == InkAnalysisDrawingKind.Circle || shape.DrawingKind == InkAnalysisDrawingKind.Ellipse)
                                 {
-                                    DrawEllipse(shape);
+                                    // 目前不支持圆形
+                                    //DrawEllipse(shape);
+                                    DrawPolygon(shape);
                                 }
                                 else
                                 {
@@ -356,49 +363,106 @@ namespace Summer
             }
         }
 
-
+        /// <summary>
+        /// 绘制圆形
+        /// </summary>
+        /// <param name="shape"></param>
         private void DrawEllipse(InkAnalysisInkDrawing shape)
         {
-            var points = shape.Points;
-            Ellipse ellipse = new Ellipse();
-            ellipse.Width = Math.Sqrt((points[0].X - points[2].X) * (points[0].X - points[2].X) +
-                 (points[0].Y - points[2].Y) * (points[0].Y - points[2].Y));
-            ellipse.Height = Math.Sqrt((points[1].X - points[3].X) * (points[1].X - points[3].X) +
-                 (points[1].Y - points[3].Y) * (points[1].Y - points[3].Y));
+            //var points = shape.Points;
+            //Ellipse ellipse = new Ellipse();
+            //ellipse.Width = Math.Sqrt((points[0].X - points[2].X) * (points[0].X - points[2].X) +
+            //     (points[0].Y - points[2].Y) * (points[0].Y - points[2].Y));
+            //ellipse.Height = Math.Sqrt((points[1].X - points[3].X) * (points[1].X - points[3].X) +
+            //     (points[1].Y - points[3].Y) * (points[1].Y - points[3].Y));
 
-            var rotAngle = Math.Atan2(points[2].Y - points[0].Y, points[2].X - points[0].X);
-            RotateTransform rotateTransform = new RotateTransform();
-            rotateTransform.Angle = rotAngle * 180 / Math.PI;
-            rotateTransform.CenterX = ellipse.Width / 2.0;
-            rotateTransform.CenterY = ellipse.Height / 2.0;
+            //var rotAngle = Math.Atan2(points[2].Y - points[0].Y, points[2].X - points[0].X);
+            //RotateTransform rotateTransform = new RotateTransform();
+            //rotateTransform.Angle = rotAngle * 180 / Math.PI;
+            //rotateTransform.CenterX = ellipse.Width / 2.0;
+            //rotateTransform.CenterY = ellipse.Height / 2.0;
 
-            TranslateTransform translateTransform = new TranslateTransform();
-            translateTransform.X = shape.Center.X - ellipse.Width / 2.0;
-            translateTransform.Y = shape.Center.Y - ellipse.Height / 2.0;
+            //TranslateTransform translateTransform = new TranslateTransform();
+            //translateTransform.X = shape.Center.X - ellipse.Width / 2.0;
+            //translateTransform.Y = shape.Center.Y - ellipse.Height / 2.0;
 
-            TransformGroup transformGroup = new TransformGroup();
-            transformGroup.Children.Add(rotateTransform);
-            transformGroup.Children.Add(translateTransform);
-            ellipse.RenderTransform = transformGroup;
+            //TransformGroup transformGroup = new TransformGroup();
+            //transformGroup.Children.Add(rotateTransform);
+            //transformGroup.Children.Add(translateTransform);
+            //ellipse.RenderTransform = transformGroup;
 
-            ellipse.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
-            ellipse.StrokeThickness = 2;
+            //ellipse.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
+            //ellipse.StrokeThickness = 2;
 
+            //try
+            //{
+            //    var points = shape.Points;
+
+            //    if (points.Count < 4)
+            //    {
+            //        return;
+            //    }
+
+            //    var strokes = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
+            //    System.Numerics.Matrix3x2 matr = strokes[0].PointTransform;
+
+            //    List<InkPoint> inkPointsList = new List<InkPoint>();
+            //    foreach (var item in shape.Points)
+            //    {
+            //        var intpoint = new InkPoint(new Point(item.X, item.Y), 0.5f);
+            //        inkPointsList.Add(intpoint);
+            //    }
+            //    inkPointsList.Add(new InkPoint(new Point(shape.Points[0].X, shape.Points[0].Y), 0.5f));
+
+            //    InkStroke leftStroke = _strokeBuilder.CreateStrokeFromInkPoints(inkPointsList, matr);
+            //    leftStroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+
+            //    SketchCanvas.InkPresenter.StrokeContainer.AddStroke(leftStroke);
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Trace.WriteLine(ex.ToString());
+            //}
         }
 
+        /// <summary>
+        /// 绘制多边形
+        /// </summary>
+        /// <param name="shape"></param>
         private void DrawPolygon(InkAnalysisInkDrawing shape)
         {
-            var points = shape.Points;
-            Polygon polygon = new Polygon();
-
-            foreach (var point in points)
+            try
             {
-                polygon.Points.Add(point);
+                var strokes = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
+                System.Numerics.Matrix3x2 matr = strokes[0].PointTransform;
+                List<InkPoint> inkPointsList = new List<InkPoint>();
+                foreach (var item in shape.Points)
+                {
+                    var intpoint = new InkPoint(new Point(item.X, item.Y), 0.5f);
+                    inkPointsList.Add(intpoint);
+                }
+
+                // 。。。不知道啥毛病，如果把整个Points传进去（要在List最后补一个Points[0]形成闭合），画出来的总是贝塞尔曲线
+                // 为了解决这个情况，干脆一条一条边来画吧
+                for (int i = 0; i < inkPointsList.Count; i++)
+                {
+                    List<InkPoint> lineInkPoints = new List<InkPoint>
+                    {
+                        inkPointsList[i],
+                        inkPointsList[(i + 1) % inkPointsList.Count]
+                    };
+
+                    InkStroke stroke = _strokeBuilder.CreateStrokeFromInkPoints(lineInkPoints, matr);
+                    stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+
+                    SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
+                }
             }
-
-            polygon.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
-            polygon.StrokeThickness = 2;
-
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.ToString());
+            }
         }
 
         #endregion
