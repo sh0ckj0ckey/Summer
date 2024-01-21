@@ -295,9 +295,6 @@ namespace Summer
 
         private readonly InkStrokeBuilder _strokeBuilder = new InkStrokeBuilder();
 
-        private readonly SolidColorBrush _shapeLightBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 0));
-        private readonly SolidColorBrush _shapeDarkBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 255, 255));
-
         /// <summary>
         /// 每次绘画完成，标记为未保存，并分析形状
         /// </summary>
@@ -664,9 +661,15 @@ namespace Summer
         /// <param name="e"></param>
         private void OnClickResetCanvasZoom(object sender, RoutedEventArgs e)
         {
-            //double zoomCenterX = SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2);
-            //double zoomCenterY = SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2);
-            SketchScrollViewer.ChangeView(0, 0, 1.0f);
+            float currentZoom = SketchScrollViewer.ZoomFactor;
+
+            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
+            double horizontalOffset = (1.0 * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+
+            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
+            double verticalOffset = (1.0 * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+
+            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, 1.0f);
         }
 
         /// <summary>
@@ -677,7 +680,15 @@ namespace Summer
         private void OnClickCanvasZoomOut(object sender, RoutedEventArgs e)
         {
             float currentZoom = SketchScrollViewer.ZoomFactor;
-            SketchScrollViewer.ChangeView(null, null, Math.Max(1, (currentZoom - 0.5f)));
+            float zoom = Math.Max(1, (currentZoom - 0.5f));
+
+            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
+            double horizontalOffset = (zoom * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+
+            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
+            double verticalOffset = (zoom * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+
+            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
         }
 
         /// <summary>
@@ -688,7 +699,15 @@ namespace Summer
         private void OnClickCanvasZoomIn(object sender, RoutedEventArgs e)
         {
             float currentZoom = SketchScrollViewer.ZoomFactor;
-            SketchScrollViewer.ChangeView(null, null, Math.Min(5, (currentZoom + 0.5f)));
+            float zoom = Math.Min(5, (currentZoom + 0.5f));
+
+            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
+            double horizontalOffset = (zoom * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+
+            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
+            double verticalOffset = (zoom * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+
+            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
         }
 
         #endregion
