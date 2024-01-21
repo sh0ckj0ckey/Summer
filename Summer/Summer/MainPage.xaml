@@ -7,10 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    xmlns:cvt="using:Summer.Converters"
     mc:Ignorable="d" RequestedTheme="Default"
     muxc:BackdropMaterial.ApplyToRootOrPageBackground="True" NavigationCacheMode="Required"
-    Loaded="Page_Loaded" Unloaded="Page_Unloaded">
+    Loaded="Page_Loaded">
 
     <Page.Resources>
         <ThemeShadow x:Name="CommonShadow"/>
@@ -49,7 +48,7 @@
 
         <!--左侧工具栏-->
         <Grid Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-            <InkToolbar TargetInkCanvas="{x:Bind SketchCanvas}" Margin="-2,0,0,0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <InkToolbar x:Name="SketchToolbar" TargetInkCanvas="{x:Bind SketchCanvas}" Margin="-2,0,0,0" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
 
         <!--底部功能栏-->

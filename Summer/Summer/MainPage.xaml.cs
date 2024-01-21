@@ -212,9 +212,17 @@ namespace Summer
             try
             {
                 SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+
+                // 默认选择圆珠笔，并根据主题切换黑白墨水
+                if (SketchToolbar.GetToolButton(InkToolbarTool.BallpointPen) is InkToolbarBallpointPenButton ballpointPen)
+                {
+                    ballpointPen.SelectedBrushIndex = _appSettings.AppearanceIndex == 1 ? 1 : 0;
+                    SketchToolbar.ActiveTool = ballpointPen;
+                }
+
                 UpdateCanvasSize(true);
 
-                SketchCanvas.InkPresenter.StrokeInput.StrokeEnded += OnStrokeEnded;
+                SketchCanvas.InkPresenter.StrokesCollected += OnCollectedStrokes;
 
                 SketchScrollViewer.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (o, d) =>
                 {
@@ -227,18 +235,6 @@ namespace Summer
                         Trace.WriteLine(ex.Message);
                     }
                 });
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        private void Page_Unloaded(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                SketchCanvas.InkPresenter.StrokeInput.StrokeEnded -= OnStrokeEnded;
             }
             catch (Exception ex)
             {
@@ -294,24 +290,32 @@ namespace Summer
         /// </summary>
         private readonly InkAnalyzer _shapesAnalyzer = new InkAnalyzer();
 
-        IReadOnlyList<InkStroke> strokesShape = null;
+        private readonly SolidColorBrush _shapeLightBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 0, 0, 0));
+        private readonly SolidColorBrush _shapeDarkBrush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 255, 255, 255));
 
-        InkAnalysisResult resultShape = null;
-
-        private async void OnStrokeEnded(InkStrokeInput sender, PointerEventArgs args)
+        /// <summary>
+        /// 每次绘画完成，标记为未保存，并分析形状
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private async void OnCollectedStrokes(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            _someInkNotSaved = true;
-
-            await Task.Delay(600);
-            if (_shapesRecognitionEnabled)
+            try
             {
-                strokesShape = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
+                _someInkNotSaved = true;
 
-                if (strokesShape.Count > 0)
+                if (!_shapesRecognitionEnabled)
                 {
-                    _shapesAnalyzer.AddDataForStrokes(strokesShape);
+                    return;
+                }
 
-                    resultShape = await _shapesAnalyzer.AnalyzeAsync();
+                await Task.Delay(600);
+
+                if (args.Strokes.Count > 0)
+                {
+                    _shapesAnalyzer.AddDataForStrokes(args.Strokes);
+
+                    var resultShape = await _shapesAnalyzer.AnalyzeAsync();
 
                     if (resultShape.Status == InkAnalysisStatus.Updated)
                     {
@@ -320,13 +324,9 @@ namespace Summer
                         foreach (var drawing in drawings)
                         {
                             var shape = (InkAnalysisInkDrawing)drawing;
-                            if (shape.DrawingKind == InkAnalysisDrawingKind.Drawing)
+
+                            if (shape.DrawingKind != InkAnalysisDrawingKind.Drawing)
                             {
-                                // Catch and process unsupported shapes (lines and so on) here.
-                            }
-                            else
-                            {
-                                // Process recognized shapes here.
                                 if (shape.DrawingKind == InkAnalysisDrawingKind.Circle || shape.DrawingKind == InkAnalysisDrawingKind.Ellipse)
                                 {
                                     DrawEllipse(shape);
@@ -335,19 +335,27 @@ namespace Summer
                                 {
                                     DrawPolygon(shape);
                                 }
+
                                 foreach (var strokeId in shape.GetStrokeIds())
                                 {
                                     var stroke = SketchCanvas.InkPresenter.StrokeContainer.GetStrokeById(strokeId);
                                     stroke.Selected = true;
                                 }
                             }
+
                             _shapesAnalyzer.RemoveDataForStrokes(shape.GetStrokeIds());
                         }
+
                         SketchCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
         }
+
 
         private void DrawEllipse(InkAnalysisInkDrawing shape)
         {
@@ -373,10 +381,9 @@ namespace Summer
             transformGroup.Children.Add(translateTransform);
             ellipse.RenderTransform = transformGroup;
 
-            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 91, 40, 0));
-            ellipse.Stroke = brush;
+            ellipse.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
             ellipse.StrokeThickness = 2;
-            // ShapesCanvas.Children.Add(ellipse);
+
         }
 
         private void DrawPolygon(InkAnalysisInkDrawing shape)
@@ -389,10 +396,9 @@ namespace Summer
                 polygon.Points.Add(point);
             }
 
-            var brush = new SolidColorBrush(Windows.UI.ColorHelper.FromArgb(255, 91, 40, 0));
-            polygon.Stroke = brush;
+            polygon.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
             polygon.StrokeThickness = 2;
-            // ShapesCanvas.Children.Add(polygon);
+
         }
 
         #endregion
@@ -451,6 +457,7 @@ namespace Summer
                 if (sender is ToggleButton)
                 {
                     _shapesRecognitionEnabled = true;
+                    _shapesAnalyzer.ClearDataForAllStrokes();
                 }
             }
             catch (Exception ex)
@@ -471,6 +478,7 @@ namespace Summer
                 if (sender is ToggleButton)
                 {
                     _shapesRecognitionEnabled = false;
+                    _shapesAnalyzer.ClearDataForAllStrokes();
                 }
             }
             catch (Exception ex)
