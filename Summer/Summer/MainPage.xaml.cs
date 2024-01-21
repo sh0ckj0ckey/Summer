@@ -82,32 +82,32 @@ namespace Summer
                 };
 
                 Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
-                async (sender, args) =>
-                {
-                    bool isCanvasEmpty = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes().Count <= 0;
-                    if (_someInkNotSaved && !isCanvasEmpty)
+                    async (sender, args) =>
                     {
-                        args.Handled = true;
-                        if (!_exitConfirmDialogShowing)
+                        bool isCanvasEmpty = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes().Count <= 0;
+                        if (_someInkNotSaved && !isCanvasEmpty)
                         {
-                            _exitConfirmDialogShowing = true;
-
-                            _exitConfirmDialog.XamlRoot = this.XamlRoot;
-                            _exitConfirmDialog.RequestedTheme = this.ActualTheme;
-                            var result = await _exitConfirmDialog.ShowAsync();
-                            if (result == ContentDialogResult.Primary)
+                            args.Handled = true;
+                            if (!_exitConfirmDialogShowing)
                             {
-                                SaveSketchToFile();
-                            }
-                            else if (result == ContentDialogResult.Secondary)
-                            {
-                                App.Current.Exit();
-                            }
+                                _exitConfirmDialogShowing = true;
 
-                            _exitConfirmDialogShowing = false;
+                                _exitConfirmDialog.XamlRoot = this.XamlRoot;
+                                _exitConfirmDialog.RequestedTheme = this.ActualTheme;
+                                var result = await _exitConfirmDialog.ShowAsync();
+                                if (result == ContentDialogResult.Primary)
+                                {
+                                    SaveSketchToFile();
+                                }
+                                else if (result == ContentDialogResult.Secondary)
+                                {
+                                    App.Current.Exit();
+                                }
+
+                                _exitConfirmDialogShowing = false;
+                            }
                         }
-                    }
-                };
+                    };
             }
             catch (Exception ex)
             {
