@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel.Resources;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -29,22 +30,182 @@ namespace Summer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private bool _recShapes = false;
-        InkAnalyzer analyzerShape = new InkAnalyzer();
-        IReadOnlyList<InkStroke> strokesShape = null;
-        InkAnalysisResult resultShape = null;
-
         public MainPage()
         {
             this.InitializeComponent();
             SetTitleBarArea();
             SwitchAppTheme();
-            _appVersion = GetAppVersion();
+            LoadAppVersion();
 
             CommonShadow.Receivers.Add(ShadowReceiverGrid);
 
             App.OnWindowSizeChanged += OnWindowSizeChanged;
+
+            RegisterClosingConfirm();
         }
+
+        #region 应用程序相关
+
+        /// <summary>
+        /// 保存提示对话框
+        /// </summary>
+        private ContentDialog _exitConfirmDialog = null;
+
+        /// <summary>
+        /// 保存提示对话框是否已经打开
+        /// </summary>
+        private bool _exitConfirmDialogShowing = false;
+
+        /// <summary>
+        /// 是否有墨迹没有保存
+        /// </summary>
+        private bool _someInkNotSaved = false;
+
+        /// <summary>
+        /// 添加关闭应用程序的保存提示
+        /// </summary>
+        private void RegisterClosingConfirm()
+        {
+            try
+            {
+                var resourceLoader = ResourceLoader.GetForCurrentView();
+
+                _exitConfirmDialog = new ContentDialog
+                {
+                    XamlRoot = this.XamlRoot,
+                    Title = resourceLoader.GetString("SaveConfirmTitle"),
+                    Content = resourceLoader.GetString("SaveConfirmContent"),
+                    PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
+                    SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
+                    CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
+                    DefaultButton = ContentDialogButton.Close
+                };
+
+                Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
+                async (sender, args) =>
+                {
+                    bool isCanvasEmpty = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes().Count <= 0;
+                    if (_someInkNotSaved && !isCanvasEmpty)
+                    {
+                        args.Handled = true;
+                        if (!_exitConfirmDialogShowing)
+                        {
+                            _exitConfirmDialogShowing = true;
+
+                            _exitConfirmDialog.XamlRoot = this.XamlRoot;
+                            _exitConfirmDialog.RequestedTheme = this.ActualTheme;
+                            var result = await _exitConfirmDialog.ShowAsync();
+                            if (result == ContentDialogResult.Primary)
+                            {
+                                SaveSketchToFile();
+                            }
+                            else if (result == ContentDialogResult.Secondary)
+                            {
+                                App.Current.Exit();
+                            }
+
+                            _exitConfirmDialogShowing = false;
+                        }
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 设置应用程序的标题栏区域
+        /// </summary>
+        private void SetTitleBarArea()
+        {
+            try
+            {
+                var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+                coreTitleBar.ExtendViewIntoTitleBar = true;
+
+                // 设置为可拖动区域
+                Window.Current.SetTitleBar(AppTitleBar);
+
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+
+                titleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
+                titleBar.ButtonInactiveForegroundColor = Windows.UI.Colors.Gray;
+
+                // 当窗口激活状态改变时，注册一个handler
+                Window.Current.Activated += (s, e) =>
+                {
+                    try
+                    {
+                        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
+                            AppTitleLogo.Opacity = 0.7;
+                        else
+                            AppTitleLogo.Opacity = 1.0;
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(ex.Message);
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 切换应用程序的主题
+        /// </summary>
+        private void SwitchAppTheme()
+        {
+            try
+            {
+                // 设置标题栏颜色
+                bool isLight = _appSettings.AppearanceIndex == 0;
+
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
+                titleBar.ButtonBackgroundColor = Colors.Transparent;
+                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                if (isLight)
+                {
+                    titleBar.ButtonForegroundColor = Colors.Black;
+                    titleBar.ButtonHoverForegroundColor = Colors.Black;
+                    titleBar.ButtonPressedForegroundColor = Colors.Black;
+                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 8, R = 0, G = 0, B = 0 };
+                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 16, R = 0, G = 0, B = 0 };
+                }
+                else
+                {
+                    titleBar.ButtonForegroundColor = Colors.White;
+                    titleBar.ButtonHoverForegroundColor = Colors.White;
+                    titleBar.ButtonPressedForegroundColor = Colors.White;
+                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 16, R = 255, G = 255, B = 255 };
+                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 24, R = 255, G = 255, B = 255 };
+                }
+
+                // 设置应用程序颜色
+                if (Window.Current.Content is FrameworkElement rootElement)
+                {
+                    if (_appSettings.AppearanceIndex == 1)
+                    {
+                        rootElement.RequestedTheme = ElementTheme.Dark;
+                    }
+                    else
+                    {
+                        rootElement.RequestedTheme = ElementTheme.Light;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -63,13 +224,13 @@ namespace Summer
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine(ex.Message);
+                        Trace.WriteLine(ex.Message);
                     }
                 });
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -81,9 +242,10 @@ namespace Summer
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
         }
+
         private void BackgroundGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             try
@@ -92,7 +254,7 @@ namespace Summer
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -114,26 +276,46 @@ namespace Summer
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
         }
 
+        #endregion
+
+        #region 画布
+
+        /// <summary>
+        /// 是否开启形状识别
+        /// </summary>
+        private bool _shapesRecognitionEnabled = false;
+
+        /// <summary>
+        /// 形状识别器
+        /// </summary>
+        private readonly InkAnalyzer _shapesAnalyzer = new InkAnalyzer();
+
+        IReadOnlyList<InkStroke> strokesShape = null;
+
+        InkAnalysisResult resultShape = null;
+
         private async void OnStrokeEnded(InkStrokeInput sender, PointerEventArgs args)
         {
+            _someInkNotSaved = true;
+
             await Task.Delay(600);
-            if (_recShapes)
+            if (_shapesRecognitionEnabled)
             {
                 strokesShape = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
 
                 if (strokesShape.Count > 0)
                 {
-                    analyzerShape.AddDataForStrokes(strokesShape);
+                    _shapesAnalyzer.AddDataForStrokes(strokesShape);
 
-                    resultShape = await analyzerShape.AnalyzeAsync();
+                    resultShape = await _shapesAnalyzer.AnalyzeAsync();
 
                     if (resultShape.Status == InkAnalysisStatus.Updated)
                     {
-                        var drawings = analyzerShape.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
+                        var drawings = _shapesAnalyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
 
                         foreach (var drawing in drawings)
                         {
@@ -159,7 +341,7 @@ namespace Summer
                                     stroke.Selected = true;
                                 }
                             }
-                            analyzerShape.RemoveDataForStrokes(shape.GetStrokeIds());
+                            _shapesAnalyzer.RemoveDataForStrokes(shape.GetStrokeIds());
                         }
                         SketchCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                     }
@@ -213,121 +395,7 @@ namespace Summer
             // ShapesCanvas.Children.Add(polygon);
         }
 
-        private async void OnClickSave(object sender, RoutedEventArgs e)
-        {
-            var savePicker = new Windows.Storage.Pickers.FileSavePicker();
-            savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-            savePicker.FileTypeChoices.Add("PNG", new List<string>() { ".png" });
-            savePicker.SuggestedFileName = "Summer Sketch";
-
-            Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
-            if (file != null)
-            {
-                CanvasDevice device = CanvasDevice.GetSharedDevice();
-                CanvasRenderTarget renderTarget = new CanvasRenderTarget(device, (int)SketchCanvas.ActualWidth, (int)SketchCanvas.ActualHeight, 96);
-                using (var ds = renderTarget.CreateDrawingSession())
-                {
-                    ds.Clear(SettingsService.Instance.AppearanceIndex == 1 ? Color.FromArgb(255, 46, 46, 46) : Colors.White);
-                    ds.DrawInk(SketchCanvas.InkPresenter.StrokeContainer.GetStrokes());
-                }
-
-                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    await renderTarget.SaveAsync(fileStream, CanvasBitmapFileFormat.Png, 1f);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 设置应用程序的标题栏区域
-        /// </summary>
-        private void SetTitleBarArea()
-        {
-            try
-            {
-                var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-                coreTitleBar.ExtendViewIntoTitleBar = true;
-
-                // 设置为可拖动区域
-                Window.Current.SetTitleBar(AppTitleBar);
-
-                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-
-                titleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
-                titleBar.ButtonInactiveForegroundColor = Windows.UI.Colors.Gray;
-
-                // 当窗口激活状态改变时，注册一个handler
-                Window.Current.Activated += (s, e) =>
-                {
-                    try
-                    {
-                        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
-                            AppTitleLogo.Opacity = 0.7;
-                        else
-                            AppTitleLogo.Opacity = 1.0;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
-                };
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 切换应用程序的主题
-        /// </summary>
-        private void SwitchAppTheme()
-        {
-            try
-            {
-                // 设置标题栏颜色
-                bool isLight = _appSettings.AppearanceIndex == 0;
-
-                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-                if (isLight)
-                {
-                    titleBar.ButtonForegroundColor = Colors.Black;
-                    titleBar.ButtonHoverForegroundColor = Colors.Black;
-                    titleBar.ButtonPressedForegroundColor = Colors.Black;
-                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 8, R = 0, G = 0, B = 0 };
-                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 16, R = 0, G = 0, B = 0 };
-                }
-                else
-                {
-                    titleBar.ButtonForegroundColor = Colors.White;
-                    titleBar.ButtonHoverForegroundColor = Colors.White;
-                    titleBar.ButtonPressedForegroundColor = Colors.White;
-                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 16, R = 255, G = 255, B = 255 };
-                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 24, R = 255, G = 255, B = 255 };
-                }
-
-                // 设置应用程序颜色
-                if (Window.Current.Content is FrameworkElement rootElement)
-                {
-                    if (_appSettings.AppearanceIndex == 1)
-                    {
-                        rootElement.RequestedTheme = ElementTheme.Dark;
-                    }
-                    else
-                    {
-                        rootElement.RequestedTheme = ElementTheme.Light;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
+        #endregion
 
         #region 底部功能栏
 
@@ -338,9 +406,16 @@ namespace Summer
         /// <param name="e"></param>
         private void OnCheckDrawWithHand(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton toggleButton)
+            try
             {
-                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
+                if (sender is ToggleButton)
+                {
+                    SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -351,9 +426,16 @@ namespace Summer
         /// <param name="e"></param>
         private void OnUncheckDrawWithHand(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton toggleButton)
+            try
             {
-                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+                if (sender is ToggleButton)
+                {
+                    SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -364,9 +446,16 @@ namespace Summer
         /// <param name="e"></param>
         private void OnCheckShapeRec(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton toggleButton)
+            try
             {
-                _recShapes = true;
+                if (sender is ToggleButton)
+                {
+                    _shapesRecognitionEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -377,9 +466,16 @@ namespace Summer
         /// <param name="e"></param>
         private void OnUncheckShapeRec(object sender, RoutedEventArgs e)
         {
-            if (sender is ToggleButton toggleButton)
+            try
             {
-                _recShapes = false;
+                if (sender is ToggleButton)
+                {
+                    _shapesRecognitionEnabled = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -390,30 +486,37 @@ namespace Summer
         /// <param name="e"></param>
         private async void OnCheckPictureBackground(object sender, RoutedEventArgs e)
         {
-            var picker = new Windows.Storage.Pickers.FileOpenPicker();
-            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".png");
-
-            Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
-            if (file != null)
+            try
             {
-                using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+                picker.FileTypeFilter.Add(".jpg");
+                picker.FileTypeFilter.Add(".jpeg");
+                picker.FileTypeFilter.Add(".png");
+
+                Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+                if (file != null)
                 {
-                    BitmapImage bitmapImage = new BitmapImage();
-                    await bitmapImage.SetSourceAsync(stream);
-                    PictureBackgroundImage.Source = bitmapImage;
-                    PictureBackgroundImage.Visibility = Visibility.Visible;
+                    using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
+                    {
+                        BitmapImage bitmapImage = new BitmapImage();
+                        await bitmapImage.SetSourceAsync(stream);
+                        PictureBackgroundImage.Source = bitmapImage;
+                        PictureBackgroundImage.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    if (sender is ToggleButton toggleButton)
+                    {
+                        toggleButton.IsChecked = false;
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                if (sender is ToggleButton toggleButton)
-                {
-                    toggleButton.IsChecked = false;
-                }
+                Trace.WriteLine(ex.Message);
             }
         }
 
@@ -424,8 +527,96 @@ namespace Summer
         /// <param name="e"></param>
         private void OnUncheckPictureBackground(object sender, RoutedEventArgs e)
         {
-            PictureBackgroundImage.Visibility = Visibility.Collapsed;
-            PictureBackgroundImage.Source = null;
+            try
+            {
+                PictureBackgroundImage.Visibility = Visibility.Collapsed;
+                PictureBackgroundImage.Source = null;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 保存到文件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickSave(object sender, RoutedEventArgs e)
+        {
+            SaveSketchToFile();
+        }
+
+        /// <summary>
+        /// 将草图保存到图片文件
+        /// </summary>
+        private async void SaveSketchToFile()
+        {
+            try
+            {
+                var savePicker = new Windows.Storage.Pickers.FileSavePicker();
+                savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+                savePicker.FileTypeChoices.Add("PNG", new List<string>() { ".png" });
+                savePicker.SuggestedFileName = "Summer Sketch";
+
+                Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
+                if (file != null)
+                {
+                    CanvasDevice device = CanvasDevice.GetSharedDevice();
+                    CanvasRenderTarget renderTarget = new CanvasRenderTarget(device, (int)SketchCanvas.ActualWidth, (int)SketchCanvas.ActualHeight, 96);
+                    using (var ds = renderTarget.CreateDrawingSession())
+                    {
+                        ds.Clear(SettingsService.Instance.AppearanceIndex == 1 ? Color.FromArgb(255, 46, 46, 46) : Colors.White);
+                        ds.DrawInk(SketchCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                    }
+
+                    using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                    {
+                        await renderTarget.SaveAsync(fileStream, CanvasBitmapFileFormat.Png, 1f);
+                    }
+
+                    _someInkNotSaved = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 重置画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickResetCanvasZoom(object sender, RoutedEventArgs e)
+        {
+            //double zoomCenterX = SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2);
+            //double zoomCenterY = SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2);
+            SketchScrollViewer.ChangeView(0, 0, 1.0f);
+        }
+
+        /// <summary>
+        /// 缩小画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickCanvasZoomOut(object sender, RoutedEventArgs e)
+        {
+            float currentZoom = SketchScrollViewer.ZoomFactor;
+            SketchScrollViewer.ChangeView(null, null, Math.Max(1, (currentZoom - 0.5f)));
+        }
+
+        /// <summary>
+        /// 增大画布缩放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickCanvasZoomIn(object sender, RoutedEventArgs e)
+        {
+            float currentZoom = SketchScrollViewer.ZoomFactor;
+            SketchScrollViewer.ChangeView(null, null, Math.Min(5, (currentZoom + 0.5f)));
         }
 
         #endregion
@@ -532,17 +723,19 @@ namespace Summer
             }
         }
 
+        #endregion
+
         #region 设置
+
+        /// <summary>
+        /// 设置
+        /// </summary>
+        private readonly SettingsService _appSettings = SettingsService.Instance;
 
         /// <summary>
         /// 应用程序版本号
         /// </summary>
         private string _appVersion = string.Empty;
-
-        /// <summary>
-        /// 设置
-        /// </summary>
-        private SettingsService _appSettings = SettingsService.Instance;
 
         /// <summary>
         /// 点击切换主题
@@ -558,59 +751,21 @@ namespace Summer
         /// 获取应用程序的版本号
         /// </summary>
         /// <returns></returns>
-        private string GetAppVersion()
+        private void LoadAppVersion()
         {
             try
             {
                 Package package = Package.Current;
                 PackageId packageId = package.Id;
                 PackageVersion version = packageId.Version;
-                return string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+                _appVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                Trace.WriteLine(ex.Message);
             }
-
-            return "";
         }
 
         #endregion
-
-        #endregion
-
-        /// <summary>
-        /// 重置画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickResetCanvasZoom(object sender, RoutedEventArgs e)
-        {
-            //double zoomCenterX = SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2);
-            //double zoomCenterY = SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2);
-            SketchScrollViewer.ChangeView(0, 0, 1.0f);
-        }
-
-        /// <summary>
-        /// 缩小画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickCanvasZoomOut(object sender, RoutedEventArgs e)
-        {
-            float currentZoom = SketchScrollViewer.ZoomFactor;
-            SketchScrollViewer.ChangeView(null, null, Math.Max(1, (currentZoom - 0.5f)));
-        }
-
-        /// <summary>
-        /// 增大画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickCanvasZoomIn(object sender, RoutedEventArgs e)
-        {
-            float currentZoom = SketchScrollViewer.ZoomFactor;
-            SketchScrollViewer.ChangeView(null, null, Math.Min(5, (currentZoom + 0.5f)));
-        }
     }
 }

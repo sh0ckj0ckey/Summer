@@ -117,11 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CancelSaveButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ConfirmSaveButton" xml:space="preserve">
+    <value>Save</value>
+  </data>
   <data name="DisplayDesc" xml:space="preserve">
     <value>Easy sketch.</value>
   </data>
   <data name="DisplayName" xml:space="preserve">
     <value>Summer</value>
+  </data>
+  <data name="DonotSaveButton" xml:space="preserve">
+    <value>Don't save</value>
   </data>
   <data name="FingerTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Draw with finger</value>
@@ -131,6 +140,12 @@
   </data>
   <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Import a picture as background</value>
+  </data>
+  <data name="SaveConfirmContent" xml:space="preserve">
+    <value>There are unsaved changes.</value>
+  </data>
+  <data name="SaveConfirmTitle" xml:space="preserve">
+    <value>Do you want to save your work?</value>
   </data>
   <data name="SaveTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save the sketch</value>
