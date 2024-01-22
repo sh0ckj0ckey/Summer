@@ -663,11 +663,11 @@ namespace Summer
         {
             float currentZoom = SketchScrollViewer.ZoomFactor;
 
-            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
-            double horizontalOffset = (1.0 * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
+            double horizontalOffset = (1.0 * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
 
-            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
-            double verticalOffset = (1.0 * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
+            double verticalOffset = (1.0 * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
 
             SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, 1.0f);
         }
@@ -682,11 +682,11 @@ namespace Summer
             float currentZoom = SketchScrollViewer.ZoomFactor;
             float zoom = Math.Max(1, (currentZoom - 0.5f));
 
-            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 4.0/*比0稍微大一点，不必精确到0.0*/ ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
-            double horizontalOffset = (zoom * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
+            double horizontalOffset = (zoom * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
 
-            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 4.0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
-            double verticalOffset = (zoom * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
+            double verticalOffset = (zoom * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
 
             SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
         }
@@ -701,11 +701,11 @@ namespace Summer
             float currentZoom = SketchScrollViewer.ZoomFactor;
             float zoom = Math.Min(5, (currentZoom + 0.5f));
 
-            double horizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 4.0 ? 0.5 : SketchScrollViewer.HorizontalOffset / SketchScrollViewer.ScrollableWidth;
-            double horizontalOffset = (zoom * (SketchScrollViewer.ExtentWidth / currentZoom) - SketchScrollViewer.ViewportWidth) * horizontalOffsetRatio;
+            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
+            double horizontalOffset = (zoom * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
 
-            double verticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 4.0 ? 0.5 : SketchScrollViewer.VerticalOffset / SketchScrollViewer.ScrollableHeight;
-            double verticalOffset = (zoom * (SketchScrollViewer.ExtentHeight / currentZoom) - SketchScrollViewer.ViewportHeight) * verticalOffsetRatio;
+            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
+            double verticalOffset = (zoom * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
 
             SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
         }
