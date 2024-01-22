@@ -24,9 +24,10 @@
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x64|arm64</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <AppxPackageDir>C:\Users\Administrator\Desktop\</AppxPackageDir>
+    <AppxPackageDir>C:\Users\Shock Jockey\Desktop\</AppxPackageDir>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
     <PackageCertificateKeyFile />
+    <PackageCertificateThumbprint>5A0BF8439709A49B4461A62D501B413C3C6D9293</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -195,6 +196,7 @@
     <Content Include="Assets\Manifest\Wide310x150Logo.scale-150.png" />
     <Content Include="Assets\Manifest\Wide310x150Logo.scale-200.png" />
     <Content Include="Assets\Manifest\Wide310x150Logo.scale-400.png" />
+    <Content Include="Assets\ScrollViewer 多个属性的含义.png" />
     <Content Include="Properties\Default.rd.xml" />
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
     <PRIResource Include="Strings\en-US\Resources.resw" />
