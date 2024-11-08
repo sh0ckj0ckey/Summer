@@ -127,7 +127,7 @@
     <value>纯粹草图。</value>
   </data>
   <data name="DisplayName" xml:space="preserve">
-    <value>夏墨</value>
+    <value>暇墨</value>
   </data>
   <data name="DonotSaveButton" xml:space="preserve">
     <value>不保存</value>
@@ -136,7 +136,7 @@
     <value>使用手指绘画</value>
   </data>
   <data name="PackageName" xml:space="preserve">
-    <value>夏墨 - 纯粹草图</value>
+    <value>暇墨 - 纯粹草图</value>
   </data>
   <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>导入图片作为背景</value>
