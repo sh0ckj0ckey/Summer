@@ -1,11 +1,20 @@
-# 暇墨
-![title.png](Assets/banner.jpg)
+<p align="center">
+    <img src="Summer/Summer/Assets/Icon/Logo2.png" alt="logo" height="128" width="128"/>
+</p>
 
-> 纯粹单一的草图画板，自从 Windows Ink 砍掉了草图功能后，我再也找不到一个可以临时画点东西的地方了。
+<h3 align="center">暇墨，纯粹单一的草图画板</h3>
+
+自从 Windows Ink 砍掉了草图功能后，我再也找不到一个可以临时画点东西的地方了。
+
+欢迎使用暇墨，在这里，你可以恣意挥洒墨水，充分释放你的想象，绘制一幅惊人的杰作！好吧，这可能有些难度，毕竟这个软件目前的功能比较简单。但是它至少能够让你记下灵感瞬间，或者梳理思考过程，或者...画个简单的草图。
 
 - 一个流畅简单的画板
 - 支持多边形的识别
 - 可以导入底图进行临摹
 - 将你的作品保存为 PNG 文件
 
-![screenshot.png](Assets/screenshot.png)
+<a href="https://apps.microsoft.com/store/detail/9n409xq59vct?launch=true&mode=full">
+	<img src="https://get.microsoft.com/images/zh-CN%20light.svg" height=64/>
+</a>
+
+![Screenshot](Assets/screenshot.png)
