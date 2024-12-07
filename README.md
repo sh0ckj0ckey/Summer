@@ -13,8 +13,8 @@
 - 可以导入底图进行临摹
 - 将你的作品保存为 PNG 文件
 
-<a href="https://apps.microsoft.com/store/detail/9n409xq59vct?launch=true&mode=full">
-	<img src="https://get.microsoft.com/images/zh-CN%20light.svg" height=64/>
+<a href="https://apps.microsoft.com/detail/9n409xq59vct?mode=full">
+	<img src="https://get.microsoft.com/images/zh-cn%20light.svg" width="200"/>
 </a>
 
 ![Screenshot](Assets/screenshot.png)
