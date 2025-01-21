@@ -20,6 +20,7 @@ namespace Summer
         /// </summary>
         public App()
         {
+            //Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
             this.InitializeComponent();
             this.Suspending += OnSuspending;
             this.UnhandledException += (s, e) => { e.Handled = true; };

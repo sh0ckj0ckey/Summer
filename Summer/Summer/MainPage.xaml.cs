@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
@@ -13,16 +10,13 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
@@ -38,6 +32,7 @@ namespace Summer
             this.InitializeComponent();
             SetTitleBarArea();
             SwitchAppTheme();
+            SwitchAppHand();
             LoadAppVersion();
 
             CommonShadow.Receivers.Add(ShadowReceiverGrid);
@@ -48,11 +43,6 @@ namespace Summer
         }
 
         #region 应用程序相关
-
-        /// <summary>
-        /// 保存提示对话框
-        /// </summary>
-        private ContentDialog _exitConfirmDialog = null;
 
         /// <summary>
         /// 保存提示对话框是否已经打开
@@ -73,17 +63,6 @@ namespace Summer
             {
                 var resourceLoader = ResourceLoader.GetForCurrentView();
 
-                _exitConfirmDialog = new ContentDialog
-                {
-                    XamlRoot = this.XamlRoot,
-                    Title = resourceLoader.GetString("SaveConfirmTitle"),
-                    Content = resourceLoader.GetString("SaveConfirmContent"),
-                    PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
-                    SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
-                    CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
-                    DefaultButton = ContentDialogButton.Close
-                };
-
                 Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
                     async (sender, args) =>
                     {
@@ -95,16 +74,27 @@ namespace Summer
                             {
                                 _exitConfirmDialogShowing = true;
 
-                                _exitConfirmDialog.XamlRoot = this.XamlRoot;
-                                _exitConfirmDialog.RequestedTheme = this.ActualTheme;
-                                var result = await _exitConfirmDialog.ShowAsync();
+                                var result = await new ContentDialog
+                                {
+                                    XamlRoot = this.XamlRoot,
+                                    RequestedTheme = this.ActualTheme,
+                                    Title = resourceLoader.GetString("SaveConfirmTitle"),
+                                    Content = resourceLoader.GetString("SaveConfirmContent"),
+                                    PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
+                                    SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
+                                    CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
+                                    DefaultButton = ContentDialogButton.Close,
+                                    Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                                }.ShowAsync();
+
                                 if (result == ContentDialogResult.Primary)
                                 {
                                     SaveSketchToFile();
                                 }
                                 else if (result == ContentDialogResult.Secondary)
                                 {
-                                    App.Current.Exit();
+                                    //Application.Current.Exit();
+                                    await ApplicationView.GetForCurrentView().TryConsolidateAsync();
                                 }
 
                                 _exitConfirmDialogShowing = false;
@@ -209,6 +199,35 @@ namespace Summer
             }
         }
 
+        /// <summary>
+        /// 切换应用程序的左右手
+        /// </summary>
+        private void SwitchAppHand()
+        {
+            try
+            {
+                bool isRightHand = _appSettings.HandModeIndex != 1;
+
+                if (isRightHand)
+                {
+                    AppTitleLogo.HorizontalAlignment = HorizontalAlignment.Right;
+                    AppBottomBar.HorizontalAlignment = HorizontalAlignment.Left;
+                    Grid.SetColumn(RightFeatureBar, 2);
+                    Grid.SetColumn(LeftFeatureBar, 0);
+                }
+                else
+                {
+                    AppTitleLogo.HorizontalAlignment = HorizontalAlignment.Left;
+                    AppBottomBar.HorizontalAlignment = HorizontalAlignment.Right;
+                    Grid.SetColumn(RightFeatureBar, 0);
+                    Grid.SetColumn(LeftFeatureBar, 2);
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -226,6 +245,7 @@ namespace Summer
                 UpdateCanvasSize(true);
 
                 SketchCanvas.InkPresenter.StrokesCollected += OnCollectedStrokes;
+                SketchCanvas.InkPresenter.StrokesErased += OnErasedStrokes;
 
                 SketchScrollViewer.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (o, d) =>
                 {
@@ -361,6 +381,23 @@ namespace Summer
         }
 
         /// <summary>
+        /// 每次擦除绘画，标记为未保存
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnErasedStrokes(InkPresenter sender, InkStrokesErasedEventArgs args)
+        {
+            try
+            {
+                _someInkNotSaved = true;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// 绘制圆形
         /// </summary>
         /// <param name="shape"></param>
@@ -462,9 +499,19 @@ namespace Summer
             }
         }
 
+        /// <summary>
+        /// 清除所有墨迹
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickClear(object sender, RoutedEventArgs e)
+        {
+            SketchCanvas?.InkPresenter?.StrokeContainer?.Clear();
+        }
+
         #endregion
 
-        #region 底部功能栏
+        #region 功能栏
 
         /// <summary>
         /// 启用手指触摸绘画
@@ -712,7 +759,7 @@ namespace Summer
 
         #endregion
 
-        #region 右侧设置栏
+        #region 设置栏
 
         /// <summary>
         /// 应用程序窗口尺寸变化，更新全屏按钮状态
@@ -836,6 +883,18 @@ namespace Summer
         private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SwitchAppTheme();
+            SettingsTeachingTip.IsOpen = false;
+        }
+
+        /// <summary>
+        /// 点击切换左右手模式
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnHandModeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SwitchAppHand();
+            SettingsTeachingTip.IsOpen = false;
         }
 
         /// <summary>
@@ -858,5 +917,6 @@ namespace Summer
         }
 
         #endregion
+
     }
 }

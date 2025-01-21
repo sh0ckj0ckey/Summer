@@ -11,11 +11,19 @@ namespace Summer
 
         private const string SETTING_NAME_APPEARANCEINDEX = "AppearanceIndex";
         private const string SETTING_NAME_CANVASINDEX = "CanvasIndex";
+        private const string SETTING_NAME_HANDMODEINDEX = "HandModeIndex";
 
         private ApplicationDataContainer _localSettings = ApplicationData.Current.LocalSettings;
 
-        // 设置的应用程序的主题 0-Light 1-Dark
         private int _appearanceIndex = -1;
+
+        private int _canvasIndex = -1;
+
+        private int _handModeIndex = -1;
+
+        /// <summary>
+        /// 设置的应用程序的主题 0-Light 1-Dark
+        /// </summary>
         public int AppearanceIndex
         {
             get
@@ -53,8 +61,9 @@ namespace Summer
             }
         }
 
-        // 设置画板底图纹理 0-纸质 1-纯色 2-透明
-        private int _canvasIndex = -1;
+        /// <summary>
+        /// 设置画板底图纹理 0-纸质 1-纯色 2-透明
+        /// </summary>
         public int CanvasIndex
         {
             get
@@ -96,5 +105,44 @@ namespace Summer
             }
         }
 
+        /// <summary>
+        /// 设置的应用程序的左右手模式 0-右手 1-左手
+        /// </summary>
+        public int HandModeIndex
+        {
+            get
+            {
+                try
+                {
+                    if (_handModeIndex < 0)
+                    {
+                        if (_localSettings.Values[SETTING_NAME_HANDMODEINDEX] == null)
+                        {
+                            _handModeIndex = 0;
+                        }
+                        else if (_localSettings.Values[SETTING_NAME_HANDMODEINDEX]?.ToString() == "0")
+                        {
+                            _handModeIndex = 0;
+                        }
+                        else if (_localSettings.Values[SETTING_NAME_HANDMODEINDEX]?.ToString() == "1")
+                        {
+                            _handModeIndex = 1;
+                        }
+                        else
+                        {
+                            _handModeIndex = 0;
+                        }
+                    }
+                }
+                catch { }
+                if (_handModeIndex < 0) _handModeIndex = 0;
+                return _handModeIndex < 0 ? 0 : _handModeIndex;
+            }
+            set
+            {
+                SetProperty(ref _handModeIndex, value);
+                ApplicationData.Current.LocalSettings.Values[SETTING_NAME_HANDMODEINDEX] = _handModeIndex;
+            }
+        }
     }
 }
