@@ -2,7 +2,7 @@
     <img src="Summer/Summer/Assets/Icon/Logo2.png" alt="logo" height="128" width="128"/>
 </p>
 
-<h3 align="center">暇墨，纯粹单一的草图画板</h3>
+<h3 align="center">Summer，纯粹单一的草图画板</h3>
 
 自从 Windows Ink 砍掉了草图功能后，我再也找不到一个可以临时画点东西的地方了。
 
