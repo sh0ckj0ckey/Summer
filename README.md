@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="Summer/Summer/Assets/Icon/Logo2.png" alt="logo" height="128" width="128"/>
+    <img src="Summer/Assets/Icon/Logo2.png" alt="logo" height="128" width="128"/>
 </p>
 
 <h3 align="center">Summer，纯粹单一的草图画板</h3>
@@ -17,4 +17,4 @@
 	<img src="https://get.microsoft.com/images/zh-cn%20light.svg" width="200"/>
 </a>
 
-![Screenshot](Assets/screenshot.png)
+![截图](Summer/Assets/Store/screenshot.png)
