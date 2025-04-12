@@ -96,7 +96,7 @@
                 <ToggleButton Content="&#xED5F;" FontSize="16" Padding="0" Width="38" Height="38" IsChecked="False" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckDrawWithHand" Unchecked="OnUncheckDrawWithHand" x:Uid="FingerTip"/>
 
                 <!--图形识别切换按钮-->
-                <ToggleButton Content="&#xE18A;" FontSize="16" Padding="0" Width="38" Height="38" IsChecked="False" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec" x:Uid="ShapeTip"/>
+                <ToggleButton Content="&#xF157;" FontSize="16" Padding="0" Width="38" Height="38" IsChecked="False" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="OnCheckShapeRec" Unchecked="OnUncheckShapeRec" x:Uid="ShapeTip"/>
 
                 <Border Width="26" Height="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
 

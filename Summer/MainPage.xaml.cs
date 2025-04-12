@@ -477,8 +477,6 @@ namespace Summer
                     inkPointsList.Add(intpoint);
                 }
 
-                // 。。。不知道啥毛病，如果把整个Points传进去（要在List最后补一个Points[0]形成闭合），画出来的总是贝塞尔曲线
-                // 为了解决这个情况，干脆一条一条边来画吧
                 for (int i = 0; i < inkPointsList.Count; i++)
                 {
                     List<InkPoint> lineInkPoints = new List<InkPoint>
