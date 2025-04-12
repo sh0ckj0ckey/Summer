@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
@@ -17,8 +19,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media.Imaging;
-
-// https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
 namespace Summer
 {
@@ -351,9 +351,7 @@ namespace Summer
                             {
                                 if (shape.DrawingKind == InkAnalysisDrawingKind.Circle || shape.DrawingKind == InkAnalysisDrawingKind.Ellipse)
                                 {
-                                    // 目前不支持圆形
-                                    //DrawEllipse(shape);
-                                    DrawPolygon(shape);
+                                    DrawEllipse(shape);
                                 }
                                 else
                                 {
@@ -398,66 +396,13 @@ namespace Summer
         }
 
         /// <summary>
-        /// 绘制圆形
+        /// 清除所有墨迹
         /// </summary>
-        /// <param name="shape"></param>
-        private void DrawEllipse(InkAnalysisInkDrawing shape)
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnClickClear(object sender, RoutedEventArgs e)
         {
-            //var points = shape.Points;
-            //Ellipse ellipse = new Ellipse();
-            //ellipse.Width = Math.Sqrt((points[0].X - points[2].X) * (points[0].X - points[2].X) +
-            //     (points[0].Y - points[2].Y) * (points[0].Y - points[2].Y));
-            //ellipse.Height = Math.Sqrt((points[1].X - points[3].X) * (points[1].X - points[3].X) +
-            //     (points[1].Y - points[3].Y) * (points[1].Y - points[3].Y));
-
-            //var rotAngle = Math.Atan2(points[2].Y - points[0].Y, points[2].X - points[0].X);
-            //RotateTransform rotateTransform = new RotateTransform();
-            //rotateTransform.Angle = rotAngle * 180 / Math.PI;
-            //rotateTransform.CenterX = ellipse.Width / 2.0;
-            //rotateTransform.CenterY = ellipse.Height / 2.0;
-
-            //TranslateTransform translateTransform = new TranslateTransform();
-            //translateTransform.X = shape.Center.X - ellipse.Width / 2.0;
-            //translateTransform.Y = shape.Center.Y - ellipse.Height / 2.0;
-
-            //TransformGroup transformGroup = new TransformGroup();
-            //transformGroup.Children.Add(rotateTransform);
-            //transformGroup.Children.Add(translateTransform);
-            //ellipse.RenderTransform = transformGroup;
-
-            //ellipse.Stroke = _appSettings.AppearanceIndex == 0 ? _shapeLightBrush : _shapeDarkBrush;
-            //ellipse.StrokeThickness = 2;
-
-            //try
-            //{
-            //    var points = shape.Points;
-
-            //    if (points.Count < 4)
-            //    {
-            //        return;
-            //    }
-
-            //    var strokes = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
-            //    System.Numerics.Matrix3x2 matr = strokes[0].PointTransform;
-
-            //    List<InkPoint> inkPointsList = new List<InkPoint>();
-            //    foreach (var item in shape.Points)
-            //    {
-            //        var intpoint = new InkPoint(new Point(item.X, item.Y), 0.5f);
-            //        inkPointsList.Add(intpoint);
-            //    }
-            //    inkPointsList.Add(new InkPoint(new Point(shape.Points[0].X, shape.Points[0].Y), 0.5f));
-
-            //    InkStroke leftStroke = _strokeBuilder.CreateStrokeFromInkPoints(inkPointsList, matr);
-            //    leftStroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
-
-            //    SketchCanvas.InkPresenter.StrokeContainer.AddStroke(leftStroke);
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Trace.WriteLine(ex.ToString());
-            //}
+            SketchCanvas?.InkPresenter?.StrokeContainer?.Clear();
         }
 
         /// <summary>
@@ -498,13 +443,128 @@ namespace Summer
         }
 
         /// <summary>
-        /// 清除所有墨迹
+        /// 绘制圆形
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickClear(object sender, RoutedEventArgs e)
+        /// <param name="shape"></param>
+        private void DrawEllipse(InkAnalysisInkDrawing shape)
         {
-            SketchCanvas?.InkPresenter?.StrokeContainer?.Clear();
+            try
+            {
+                var (center, a, b, rotation) = CalculateEllipseParameters(shape.Points.ToArray());
+
+                var points = GenerateEllipsePoints(center, a, b, rotation);
+
+                InkStroke stroke = _strokeBuilder.CreateStroke(points);
+                stroke.PointTransform = Matrix3x2.Identity;
+                stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+
+                SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// 椭圆参数计算核心方法
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        private (Point center, double a, double b, double rotation) CalculateEllipseParameters(Point[] points)
+        {
+            // 寻找最长轴
+            var maxDistance = 0.0;
+            Point p1 = points[0], p2 = points[1];
+
+            foreach (var pair in Combinations(points))
+            {
+                var dist = Distance(pair.Item1, pair.Item2);
+                if (dist > maxDistance)
+                {
+                    maxDistance = dist;
+                    p1 = pair.Item1;
+                    p2 = pair.Item2;
+                }
+            }
+
+            // 计算中心点
+            var center = new Point((p1.X + p2.X) / 2, (p1.Y + p2.Y) / 2);
+
+            // 计算长半轴和旋转角度
+            var a = maxDistance / 2;
+            var rotation = Math.Atan2(p2.Y - p1.Y, p2.X - p1.X);
+
+            // 计算短半轴（使用投影法）
+            var b = 0.0;
+            foreach (var p in points.Except(new[] { p1, p2 }))
+            {
+                // 坐标旋转补偿
+                var translatedX = p.X - center.X;
+                var translatedY = p.Y - center.Y;
+                var rotatedX = translatedX * Math.Cos(-rotation) - translatedY * Math.Sin(-rotation);
+                var rotatedY = translatedX * Math.Sin(-rotation) + translatedY * Math.Cos(-rotation);
+
+                var currentB = Math.Abs(rotatedY);
+                if (currentB > b) b = currentB;
+            }
+
+            return (center, a, b, rotation);
+        }
+
+        /// <summary>
+        /// 生成椭圆点
+        /// </summary>
+        /// <param name="center"></param>
+        /// <param name="a">长半轴（椭圆长轴的一半长度）</param>
+        /// <param name="b">短半轴（椭圆短轴的一半长度）</param>
+        /// <param name="rotation"></param>
+        /// <param name="segments">采样分段数</param>
+        /// <returns></returns>
+        private List<Point> GenerateEllipsePoints(Point center, double a, double b, double rotation, int segments = 72)
+        {
+            var points = new List<Point>();
+
+            for (int i = 0; i <= segments; i++)
+            {
+                double angle = 2 * Math.PI * i / segments;
+
+                // 标准椭圆坐标
+                var x = a * Math.Cos(angle);
+                var y = b * Math.Sin(angle);
+
+                // 应用旋转
+                var rotatedX = x * Math.Cos(rotation) - y * Math.Sin(rotation);
+                var rotatedY = x * Math.Sin(rotation) + y * Math.Cos(rotation);
+
+                // 平移至中心点
+                points.Add(new Point(center.X + rotatedX, center.Y + rotatedY));
+            }
+
+            // 强制闭合
+            points.Add(points[0]);
+            return points;
+        }
+
+        /// <summary>
+        /// 辅助方法：两点距离计算
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        private double Distance(Point a, Point b) => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
+
+        /// <summary>
+        /// 辅助方法：生成所有两两组合
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        private IEnumerable<Tuple<Point, Point>> Combinations(Point[] points)
+        {
+            for (int i = 0; i < points.Length; i++)
+                for (int j = i + 1; j < points.Length; j++)
+                    yield return Tuple.Create(points[i], points[j]);
         }
 
         #endregion
