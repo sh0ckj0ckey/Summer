@@ -235,6 +235,12 @@ namespace Summer
             {
                 SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
 
+                var drawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+                drawingAttributes.IgnoreTilt = false;
+                drawingAttributes.IgnorePressure = false;
+                drawingAttributes.FitToCurve = true;
+                SketchCanvas.InkPresenter.UpdateDefaultDrawingAttributes(drawingAttributes);
+
                 // 默认选择圆珠笔，并根据主题切换黑白墨水
                 if (SketchToolbar.GetToolButton(InkToolbarTool.BallpointPen) is InkToolbarBallpointPenButton ballpointPen)
                 {
@@ -521,7 +527,7 @@ namespace Summer
         /// <param name="rotation"></param>
         /// <param name="segments">采样分段数</param>
         /// <returns></returns>
-        private List<Point> GenerateEllipsePoints(Point center, double a, double b, double rotation, int segments = 72)
+        private List<Point> GenerateEllipsePoints(Point center, double a, double b, double rotation, int segments = 256)
         {
             var points = new List<Point>();
 
