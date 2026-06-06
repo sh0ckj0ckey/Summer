@@ -1,9 +1,9 @@
 <p align="center">
-    <img src="Summer/Assets/Icon/Logo2.png" alt="logo" height="128" width="128"/>
+    <img src="Summer/Assets/Logo/summer_logo_detailed.png" alt="logo" height="128" width="128"/>
 </p>
 
-<h3 align="center">Summer Sketch</h3>
-<h4 align="center">暇墨，干净的草图画板</h4>
+<h3 align="center">Summer</h3>
+<h4 align="center">暇墨</h4>
 
 ## Overview
 
@@ -31,4 +31,4 @@ Welcome to Summer, where you can splash your ink as much as you want and fully u
 
 ## Screenshots
 
-![截图](Summer/Assets/Store/screenshot.png)
+![截图](Assets/screenshot.png)

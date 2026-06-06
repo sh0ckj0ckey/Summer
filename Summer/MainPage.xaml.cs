@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.Resources;
-using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI;
-using Windows.UI.Input.Inking;
-using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -23,213 +15,202 @@ using Windows.UI.Xaml.Media.Imaging;
 namespace Summer
 {
     /// <summary>
-    /// 可用于自身或导航至 Frame 内部的空白页。
+    /// An empty page that can be used on its own or navigated to within a <see cref="Frame">.
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        public Helpers.SettingsService AppSettings { get; } = new Helpers.SettingsService();
+
+        public string AppVersion { get; }
+
+        private readonly Helpers.InkShapeRecognizer _shapeRecognizer = new();
+
+        private readonly Windows.UI.Input.Inking.InkStrokeBuilder _strokeBuilder = new();
+
+        private bool _shapeRecognitionEnabled = false;
+
+        private bool _hasUnsavedChanges = false;
+
+        private ContentDialog? _closingContentDialog = null;
+
         public MainPage()
         {
-            this.InitializeComponent();
-            SetTitleBarArea();
-            SwitchAppTheme();
-            SwitchAppHand();
-            LoadAppVersion();
+            CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = true;
 
-            CommonShadow.Receivers.Add(ShadowReceiverGrid);
+            InitializeComponent();
 
-            App.OnWindowSizeChanged += OnWindowSizeChanged;
+            this.Loaded += (_, _) =>
+            {
+                Window.Current.SetTitleBar(TitleBarGrid);
 
-            RegisterClosingConfirm();
+                UpdateAppTheme();
+                UpdateAppHandednessMode();
+
+                InitializeInk();
+
+                CommonShadow.Receivers.Add(ShadowReceiverGrid);
+
+                UpdateSketchCanvasSize(true);
+            };
+
+            this.AppSettings.AppearanceSettingChanged += (_, _) =>
+            {
+                UpdateAppTheme();
+            };
+
+            this.AppSettings.HandednessModeSettingsChanged += (_, _) =>
+            {
+                UpdateAppHandednessMode();
+            };
+
+            ListenWindowSizeChanged();
+            ListenWindowActivated();
+            ListenWindowCloseRequested();
+            ListenCanvasZoomed();
+            ListenCanvasSizeChanged();
+            ListenInkChanged();
+            ListenInkStrokesCollected();
+
+            this.AppVersion = $"{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
         }
 
-        #region 应用程序相关
-
-        /// <summary>
-        /// 保存提示对话框是否已经打开
-        /// </summary>
-        private bool _exitConfirmDialogShowing = false;
-
-        /// <summary>
-        /// 是否有墨迹没有保存
-        /// </summary>
-        private bool _someInkNotSaved = false;
-
-        /// <summary>
-        /// 添加关闭应用程序的保存提示
-        /// </summary>
-        private void RegisterClosingConfirm()
+        private void ListenWindowSizeChanged()
         {
-            try
+            Window.Current.CoreWindow.SizeChanged += (_, _) =>
+            {
+                var view = ApplicationView.GetForCurrentView();
+                FullscreenButton?.IsChecked = view.IsFullScreenMode;
+            };
+        }
+
+        private void ListenWindowActivated()
+        {
+            Window.Current.Activated += (_, e) =>
+            {
+                LogoStackPanel?.Opacity = e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated ? 0.7 : 1.0;
+            };
+        }
+
+        private void ListenWindowCloseRequested()
+        {
+            Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += async (_, args) =>
             {
                 var resourceLoader = ResourceLoader.GetForCurrentView();
-
-                Windows.UI.Core.Preview.SystemNavigationManagerPreview.GetForCurrentView().CloseRequested +=
-                    async (sender, args) =>
-                    {
-                        bool isCanvasEmpty = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes().Count <= 0;
-                        if (_someInkNotSaved && !isCanvasEmpty)
-                        {
-                            args.Handled = true;
-                            if (!_exitConfirmDialogShowing)
-                            {
-                                _exitConfirmDialogShowing = true;
-
-                                var result = await new ContentDialog
-                                {
-                                    XamlRoot = this.XamlRoot,
-                                    RequestedTheme = this.ActualTheme,
-                                    Title = resourceLoader.GetString("SaveConfirmTitle"),
-                                    Content = resourceLoader.GetString("SaveConfirmContent"),
-                                    PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
-                                    SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
-                                    CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
-                                    DefaultButton = ContentDialogButton.Close,
-                                    Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                                }.ShowAsync();
-
-                                if (result == ContentDialogResult.Primary)
-                                {
-                                    SaveSketchToFile();
-                                }
-                                else if (result == ContentDialogResult.Secondary)
-                                {
-                                    //Application.Current.Exit();
-                                    await ApplicationView.GetForCurrentView().TryConsolidateAsync();
-                                }
-
-                                _exitConfirmDialogShowing = false;
-                            }
-                        }
-                    };
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 设置应用程序的标题栏区域
-        /// </summary>
-        private void SetTitleBarArea()
-        {
-            try
-            {
-                var coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-                coreTitleBar.ExtendViewIntoTitleBar = true;
-
-                // 设置为可拖动区域
-                Window.Current.SetTitleBar(AppTitleBar);
-
-                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-
-                titleBar.ButtonBackgroundColor = Windows.UI.Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Windows.UI.Colors.Transparent;
-                titleBar.ButtonInactiveForegroundColor = Windows.UI.Colors.Gray;
-
-                // 当窗口激活状态改变时，注册一个handler
-                Window.Current.Activated += (s, e) =>
+                bool isCanvasEmpty = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes().Count <= 0;
+                if (_hasUnsavedChanges && !isCanvasEmpty)
                 {
+                    args.Handled = true;
+
+                    if (_closingContentDialog is not null)
+                    {
+                        return;
+                    }
+
+                    _closingContentDialog = new ContentDialog()
+                    {
+                        XamlRoot = this.XamlRoot,
+                        RequestedTheme = this.ActualTheme,
+                        Title = resourceLoader.GetString("SaveConfirmTitle"),
+                        Content = resourceLoader.GetString("SaveConfirmContent"),
+                        PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
+                        SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
+                        CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
+                        DefaultButton = ContentDialogButton.Close,
+                        Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                    };
+
                     try
                     {
-                        if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
-                            AppTitleLogo.Opacity = 0.7;
-                        else
-                            AppTitleLogo.Opacity = 1.0;
+                        var result = await _closingContentDialog.ShowAsync();
+
+                        if (result == ContentDialogResult.Primary)
+                        {
+                            bool saved = await SaveSketchToFileAsync();
+                            if (saved)
+                            {
+                                await ApplicationView.GetForCurrentView().TryConsolidateAsync();
+                            }
+                        }
+                        else if (result == ContentDialogResult.Secondary)
+                        {
+                            await ApplicationView.GetForCurrentView().TryConsolidateAsync();
+                        }
                     }
                     catch (Exception ex)
                     {
-                        Trace.WriteLine(ex.Message);
+                        System.Diagnostics.Trace.WriteLine(ex.Message);
                     }
-                };
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 切换应用程序的主题
-        /// </summary>
-        private void SwitchAppTheme()
-        {
-            try
-            {
-                // 设置标题栏颜色
-                bool isLight = _appSettings.AppearanceIndex == 0;
-
-                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
-                titleBar.ButtonBackgroundColor = Colors.Transparent;
-                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-                if (isLight)
-                {
-                    titleBar.ButtonForegroundColor = Colors.Black;
-                    titleBar.ButtonHoverForegroundColor = Colors.Black;
-                    titleBar.ButtonPressedForegroundColor = Colors.Black;
-                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 8, R = 0, G = 0, B = 0 };
-                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 16, R = 0, G = 0, B = 0 };
-                }
-                else
-                {
-                    titleBar.ButtonForegroundColor = Colors.White;
-                    titleBar.ButtonHoverForegroundColor = Colors.White;
-                    titleBar.ButtonPressedForegroundColor = Colors.White;
-                    titleBar.ButtonHoverBackgroundColor = new Color() { A = 16, R = 255, G = 255, B = 255 };
-                    titleBar.ButtonPressedBackgroundColor = new Color() { A = 24, R = 255, G = 255, B = 255 };
-                }
-
-                // 设置应用程序颜色
-                if (Window.Current.Content is FrameworkElement rootElement)
-                {
-                    if (_appSettings.AppearanceIndex == 1)
+                    finally
                     {
-                        rootElement.RequestedTheme = ElementTheme.Dark;
-                    }
-                    else
-                    {
-                        rootElement.RequestedTheme = ElementTheme.Light;
+                        _closingContentDialog = null;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
+            };
         }
 
-        /// <summary>
-        /// 切换应用程序的左右手
-        /// </summary>
-        private void SwitchAppHand()
+        private void ListenCanvasZoomed()
         {
-            try
+            SketchCanvasScrollViewer.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (o, d) =>
             {
-                bool isRightHand = _appSettings.HandModeIndex != 1;
-
-                if (isRightHand)
+                try
                 {
-                    AppTitleLogo.HorizontalAlignment = HorizontalAlignment.Right;
-                    AppBottomBar.HorizontalAlignment = HorizontalAlignment.Left;
-                    Grid.SetColumn(RightFeatureBar, 2);
-                    Grid.SetColumn(LeftFeatureBar, 0);
+                    CanvasZoomFactorTextBlock.Text = ((SketchCanvasScrollViewer.ZoomFactor * 100)).ToString("f0");
                 }
-                else
+                catch (Exception ex)
                 {
-                    AppTitleLogo.HorizontalAlignment = HorizontalAlignment.Left;
-                    AppBottomBar.HorizontalAlignment = HorizontalAlignment.Right;
-                    Grid.SetColumn(RightFeatureBar, 0);
-                    Grid.SetColumn(LeftFeatureBar, 2);
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
                 }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
+            });
         }
 
-        private void Page_Loaded(object sender, RoutedEventArgs e)
+        private void ListenCanvasSizeChanged()
+        {
+            CanvasGrid.SizeChanged += (_, _) => UpdateSketchCanvasSize();
+        }
+
+        private void ListenInkChanged()
+        {
+            SketchCanvas.InkPresenter.StrokesCollected += (_, _) =>
+            {
+                _hasUnsavedChanges = true;
+            };
+            SketchCanvas.InkPresenter.StrokesErased += (_, _) =>
+            {
+                _hasUnsavedChanges = true;
+            };
+        }
+
+        private void ListenInkStrokesCollected()
+        {
+            SketchCanvas.InkPresenter.StrokesCollected += async (_, args) =>
+            {
+                try
+                {
+                    if (!_shapeRecognitionEnabled)
+                    {
+                        return;
+                    }
+
+                    if (args.Strokes.Count <= 0)
+                    {
+                        return;
+                    }
+
+                    var results = await _shapeRecognizer.AnalyzeAsync(args.Strokes);
+
+                    foreach (var result in results)
+                    {
+                        ReplaceRecognizedShape(result);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                }
+            };
+        }
+
+        private void InitializeInk()
         {
             try
             {
@@ -241,746 +222,476 @@ namespace Summer
                 drawingAttributes.FitToCurve = true;
                 SketchCanvas.InkPresenter.UpdateDefaultDrawingAttributes(drawingAttributes);
 
-                // 默认选择圆珠笔，并根据主题切换黑白墨水
                 if (SketchToolbar.GetToolButton(InkToolbarTool.BallpointPen) is InkToolbarBallpointPenButton ballpointPen)
                 {
-                    ballpointPen.SelectedBrushIndex = _appSettings.AppearanceIndex == 1 ? 1 : 0;
+                    ballpointPen.SelectedBrushIndex = this.AppSettings.Appearance == 1 ? 1 : 0;
                     SketchToolbar.ActiveTool = ballpointPen;
                 }
-
-                UpdateCanvasSize(true);
-
-                SketchCanvas.InkPresenter.StrokesCollected += OnCollectedStrokes;
-                SketchCanvas.InkPresenter.StrokesErased += OnErasedStrokes;
-
-                SketchScrollViewer.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (o, d) =>
-                {
-                    try
-                    {
-                        CanvasZoomFactorTextBlock.Text = ((SketchScrollViewer.ZoomFactor * 100)).ToString("f0");
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine(ex.Message);
-                    }
-                });
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                System.Diagnostics.Trace.WriteLine(ex.Message);
             }
         }
 
-        private void BackgroundGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void UpdateAppTheme()
         {
             try
             {
-                UpdateCanvasSize(false);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
+                bool isLightTheme = this.AppSettings.Appearance == 0;
 
-        private void UpdateCanvasSize(bool forceUpdateCavas)
-        {
-            try
-            {
-                SketchScrollViewer.Height = CanvasGrid.ActualHeight;
-                SketchScrollViewer.Width = CanvasGrid.ActualWidth;
+                var titleBar = ApplicationView.GetForCurrentView().TitleBar;
 
-                if (SketchGrid.Height < CanvasGrid.ActualHeight || forceUpdateCavas)
+                titleBar.BackgroundColor = Colors.Transparent;
+                titleBar.InactiveBackgroundColor = Colors.Transparent;
+                titleBar.ButtonBackgroundColor = Colors.Transparent;
+                titleBar.ButtonHoverBackgroundColor = isLightTheme ? Windows.UI.Color.FromArgb(10, 0, 0, 0) : Windows.UI.Color.FromArgb(16, 255, 255, 255);
+                titleBar.ButtonPressedBackgroundColor = isLightTheme ? Windows.UI.Color.FromArgb(08, 0, 0, 0) : Windows.UI.Color.FromArgb(10, 255, 255, 255);
+                titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+
+                titleBar.ForegroundColor = isLightTheme ? Colors.Black : Colors.White;
+                titleBar.InactiveForegroundColor = Colors.Gray;
+                titleBar.ButtonForegroundColor = isLightTheme ? Colors.Black : Colors.White;
+                titleBar.ButtonHoverForegroundColor = isLightTheme ? Colors.Black : Colors.White;
+                titleBar.ButtonPressedForegroundColor = isLightTheme ? Colors.Black : Colors.White;
+                titleBar.ButtonInactiveForegroundColor = Colors.Gray;
+
+                if (Window.Current.Content is FrameworkElement rootElement)
                 {
-                    SketchGrid.Height = CanvasGrid.ActualHeight;
-                }
-                if (SketchGrid.Width < CanvasGrid.ActualWidth || forceUpdateCavas)
-                {
-                    SketchGrid.Width = CanvasGrid.ActualWidth;
+                    rootElement.RequestedTheme = this.AppSettings.Appearance == 1 ? ElementTheme.Dark : ElementTheme.Light;
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                System.Diagnostics.Trace.WriteLine($"Failed to UpdateAppTheme: {ex}");
             }
         }
 
-        #endregion
-
-        #region 画布
-
-        /// <summary>
-        /// 是否开启形状识别
-        /// </summary>
-        private bool _shapesRecognitionEnabled = false;
-
-        /// <summary>
-        /// 形状识别器
-        /// </summary>
-        private readonly InkAnalyzer _shapesAnalyzer = new InkAnalyzer();
-
-        private readonly InkStrokeBuilder _strokeBuilder = new InkStrokeBuilder();
-
-        /// <summary>
-        /// 每次绘画完成，标记为未保存，并分析形状
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private async void OnCollectedStrokes(InkPresenter sender, InkStrokesCollectedEventArgs args)
+        private void UpdateAppHandednessMode()
         {
             try
             {
-                _someInkNotSaved = true;
+                if (this.AppSettings.HandednessMode != 1)
+                {
+                    _ = VisualStateManager.GoToState(this, "RightHandState", false);
+                }
+                else
+                {
+                    _ = VisualStateManager.GoToState(this, "LeftHandState", false);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"Failed to UpdateAppHandednessMode: {ex}");
+            }
+        }
 
-                if (!_shapesRecognitionEnabled)
+        private void UpdateSketchCanvasSize(bool force = false)
+        {
+            try
+            {
+                double viewportWidth = CanvasGrid.ActualWidth;
+                double viewportHeight = CanvasGrid.ActualHeight;
+
+                if (viewportWidth <= 0 || viewportHeight <= 0)
                 {
                     return;
                 }
 
-                await Task.Delay(600);
-
-                if (args.Strokes.Count > 0)
+                if (force || SketchCanvasGrid.Width < viewportWidth)
                 {
-                    _shapesAnalyzer.AddDataForStrokes(args.Strokes);
+                    SketchCanvasGrid.Width = viewportWidth;
+                }
 
-                    var resultShape = await _shapesAnalyzer.AnalyzeAsync();
-
-                    if (resultShape.Status == InkAnalysisStatus.Updated)
-                    {
-                        var drawings = _shapesAnalyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
-
-                        foreach (var drawing in drawings)
-                        {
-                            var shape = (InkAnalysisInkDrawing)drawing;
-
-                            if (shape.DrawingKind != InkAnalysisDrawingKind.Drawing)
-                            {
-                                if (shape.DrawingKind == InkAnalysisDrawingKind.Circle || shape.DrawingKind == InkAnalysisDrawingKind.Ellipse)
-                                {
-                                    DrawEllipse(shape);
-                                }
-                                else
-                                {
-                                    DrawPolygon(shape);
-                                }
-
-                                foreach (var strokeId in shape.GetStrokeIds())
-                                {
-                                    var stroke = SketchCanvas.InkPresenter.StrokeContainer.GetStrokeById(strokeId);
-                                    stroke.Selected = true;
-                                }
-                            }
-
-                            _shapesAnalyzer.RemoveDataForStrokes(shape.GetStrokeIds());
-                        }
-
-                        SketchCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-                    }
+                if (force || SketchCanvasGrid.Height < viewportHeight)
+                {
+                    SketchCanvasGrid.Height = viewportHeight;
                 }
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                System.Diagnostics.Trace.WriteLine($"Failed to UpdateSketchCanvasSize: {ex}");
             }
         }
 
-        /// <summary>
-        /// 每次擦除绘画，标记为未保存
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void OnErasedStrokes(InkPresenter sender, InkStrokesErasedEventArgs args)
+        private async Task<bool> SaveSketchToFileAsync()
         {
             try
             {
-                _someInkNotSaved = true;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 清除所有墨迹
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickClear(object sender, RoutedEventArgs e)
-        {
-            SketchCanvas?.InkPresenter?.StrokeContainer?.Clear();
-        }
-
-        /// <summary>
-        /// 绘制多边形
-        /// </summary>
-        /// <param name="shape"></param>
-        private void DrawPolygon(InkAnalysisInkDrawing shape)
-        {
-            try
-            {
-                var strokes = SketchCanvas.InkPresenter.StrokeContainer.GetStrokes();
-                System.Numerics.Matrix3x2 matr = strokes[0].PointTransform;
-                List<InkPoint> inkPointsList = new List<InkPoint>();
-                foreach (var item in shape.Points)
+                var savePicker = new Windows.Storage.Pickers.FileSavePicker
                 {
-                    var intpoint = new InkPoint(new Point(item.X, item.Y), 0.5f);
-                    inkPointsList.Add(intpoint);
-                }
+                    SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary
+                };
 
-                for (int i = 0; i < inkPointsList.Count; i++)
-                {
-                    List<InkPoint> lineInkPoints = new List<InkPoint>
-                    {
-                        inkPointsList[i],
-                        inkPointsList[(i + 1) % inkPointsList.Count]
-                    };
-
-                    InkStroke stroke = _strokeBuilder.CreateStrokeFromInkPoints(lineInkPoints, matr);
-                    stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
-
-                    SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.ToString());
-            }
-        }
-
-        /// <summary>
-        /// 绘制圆形
-        /// </summary>
-        /// <param name="shape"></param>
-        private void DrawEllipse(InkAnalysisInkDrawing shape)
-        {
-            try
-            {
-                var (center, a, b, rotation) = CalculateEllipseParameters(shape.Points.ToArray());
-
-                var points = GenerateEllipsePoints(center, a, b, rotation);
-
-                InkStroke stroke = _strokeBuilder.CreateStroke(points);
-                stroke.PointTransform = Matrix3x2.Identity;
-                stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
-
-                SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.ToString());
-            }
-        }
-
-        /// <summary>
-        /// 椭圆参数计算核心方法
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        private (Point center, double a, double b, double rotation) CalculateEllipseParameters(Point[] points)
-        {
-            // 寻找最长轴
-            var maxDistance = 0.0;
-            Point p1 = points[0], p2 = points[1];
-
-            foreach (var pair in Combinations(points))
-            {
-                var dist = Distance(pair.Item1, pair.Item2);
-                if (dist > maxDistance)
-                {
-                    maxDistance = dist;
-                    p1 = pair.Item1;
-                    p2 = pair.Item2;
-                }
-            }
-
-            // 计算中心点
-            var center = new Point((p1.X + p2.X) / 2, (p1.Y + p2.Y) / 2);
-
-            // 计算长半轴和旋转角度
-            var a = maxDistance / 2;
-            var rotation = Math.Atan2(p2.Y - p1.Y, p2.X - p1.X);
-
-            // 计算短半轴（使用投影法）
-            var b = 0.0;
-            foreach (var p in points.Except(new[] { p1, p2 }))
-            {
-                // 坐标旋转补偿
-                var translatedX = p.X - center.X;
-                var translatedY = p.Y - center.Y;
-                var rotatedX = translatedX * Math.Cos(-rotation) - translatedY * Math.Sin(-rotation);
-                var rotatedY = translatedX * Math.Sin(-rotation) + translatedY * Math.Cos(-rotation);
-
-                var currentB = Math.Abs(rotatedY);
-                if (currentB > b) b = currentB;
-            }
-
-            return (center, a, b, rotation);
-        }
-
-        /// <summary>
-        /// 生成椭圆点
-        /// </summary>
-        /// <param name="center"></param>
-        /// <param name="a">长半轴（椭圆长轴的一半长度）</param>
-        /// <param name="b">短半轴（椭圆短轴的一半长度）</param>
-        /// <param name="rotation"></param>
-        /// <param name="segments">采样分段数</param>
-        /// <returns></returns>
-        private List<Point> GenerateEllipsePoints(Point center, double a, double b, double rotation, int segments = 256)
-        {
-            var points = new List<Point>();
-
-            for (int i = 0; i <= segments; i++)
-            {
-                double angle = 2 * Math.PI * i / segments;
-
-                // 标准椭圆坐标
-                var x = a * Math.Cos(angle);
-                var y = b * Math.Sin(angle);
-
-                // 应用旋转
-                var rotatedX = x * Math.Cos(rotation) - y * Math.Sin(rotation);
-                var rotatedY = x * Math.Sin(rotation) + y * Math.Cos(rotation);
-
-                // 平移至中心点
-                points.Add(new Point(center.X + rotatedX, center.Y + rotatedY));
-            }
-
-            // 强制闭合
-            points.Add(points[0]);
-            return points;
-        }
-
-        /// <summary>
-        /// 辅助方法：两点距离计算
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        private double Distance(Point a, Point b) => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
-
-        /// <summary>
-        /// 辅助方法：生成所有两两组合
-        /// </summary>
-        /// <param name="points"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        private IEnumerable<Tuple<Point, Point>> Combinations(Point[] points)
-        {
-            for (int i = 0; i < points.Length; i++)
-                for (int j = i + 1; j < points.Length; j++)
-                    yield return Tuple.Create(points[i], points[j]);
-        }
-
-        #endregion
-
-        #region 功能栏
-
-        /// <summary>
-        /// 启用手指触摸绘画
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnCheckDrawWithHand(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is ToggleButton)
-                {
-                    SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 关闭手指绘画
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnUncheckDrawWithHand(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is ToggleButton)
-                {
-                    SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 开启形状识别
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnCheckShapeRec(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is ToggleButton)
-                {
-                    _shapesRecognitionEnabled = true;
-                    _shapesAnalyzer.ClearDataForAllStrokes();
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 关闭形状识别
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnUncheckShapeRec(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is ToggleButton)
-                {
-                    _shapesRecognitionEnabled = false;
-                    _shapesAnalyzer.ClearDataForAllStrokes();
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 开启底图
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void OnCheckPictureBackground(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var picker = new Windows.Storage.Pickers.FileOpenPicker();
-                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-                picker.FileTypeFilter.Add(".jpg");
-                picker.FileTypeFilter.Add(".jpeg");
-                picker.FileTypeFilter.Add(".png");
-
-                Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
-                if (file != null)
-                {
-                    using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.Read))
-                    {
-                        BitmapImage bitmapImage = new BitmapImage();
-                        await bitmapImage.SetSourceAsync(stream);
-                        PictureBackgroundImage.Source = bitmapImage;
-                        PictureBackgroundImage.Visibility = Visibility.Visible;
-                    }
-                }
-                else
-                {
-                    if (sender is ToggleButton toggleButton)
-                    {
-                        toggleButton.IsChecked = false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 关闭底图
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnUncheckPictureBackground(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                PictureBackgroundImage.Visibility = Visibility.Collapsed;
-                PictureBackgroundImage.Source = null;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// 保存到文件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickSave(object sender, RoutedEventArgs e)
-        {
-            SaveSketchToFile();
-        }
-
-        /// <summary>
-        /// 将草图保存到图片文件
-        /// </summary>
-        private async void SaveSketchToFile()
-        {
-            try
-            {
-                var savePicker = new Windows.Storage.Pickers.FileSavePicker();
-                savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-                savePicker.FileTypeChoices.Add("PNG", new List<string>() { ".png" });
+                savePicker.FileTypeChoices.Add("PNG", [".png"]);
                 savePicker.SuggestedFileName = "Summer Sketch";
 
                 Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
-                if (file != null)
+
+                if (file is null)
                 {
-                    CanvasDevice device = CanvasDevice.GetSharedDevice();
-                    CanvasRenderTarget renderTarget = new CanvasRenderTarget(device, (int)SketchCanvas.ActualWidth, (int)SketchCanvas.ActualHeight, 96);
-                    using (var ds = renderTarget.CreateDrawingSession())
-                    {
-                        ds.Clear(SettingsService.Instance.AppearanceIndex == 1 ? Color.FromArgb(255, 46, 46, 46) : Colors.White);
-                        ds.DrawInk(SketchCanvas.InkPresenter.StrokeContainer.GetStrokes());
-                    }
-
-                    using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                    {
-                        await renderTarget.SaveAsync(fileStream, CanvasBitmapFileFormat.Png, 1f);
-                    }
-
-                    _someInkNotSaved = false;
+                    return false;
                 }
+
+                CanvasDevice device = CanvasDevice.GetSharedDevice();
+                CanvasRenderTarget renderTarget = new(device, (int)Math.Ceiling(SketchCanvasGrid.Width), (int)Math.Ceiling(SketchCanvasGrid.Height), 96);
+                using (var ds = renderTarget.CreateDrawingSession())
+                {
+                    ds.Clear(this.AppSettings.Appearance == 1 ? Color.FromArgb(255, 46, 46, 46) : Colors.White);
+                    ds.DrawInk(SketchCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                }
+
+                using (var fileStream = await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+                {
+                    await renderTarget.SaveAsync(fileStream, CanvasBitmapFileFormat.Png, 1f);
+                }
+
+                _hasUnsavedChanges = false;
+                return true;
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+                return false;
             }
         }
 
-        /// <summary>
-        /// 重置画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickResetCanvasZoom(object sender, RoutedEventArgs e)
+        private void ReplaceRecognizedShape(Helpers.RecognizedShapeResult result)
         {
-            float currentZoom = SketchScrollViewer.ZoomFactor;
+            try
+            {
+                if (result is null || result.SourceStrokeIds is null || result.Points is null)
+                {
+                    return;
+                }
 
-            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
-            double horizontalOffset = (1.0 * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
+                foreach (uint strokeId in result.SourceStrokeIds)
+                {
+                    var stroke = SketchCanvas.InkPresenter.StrokeContainer.GetStrokeById(strokeId);
+                    stroke?.Selected = true;
+                }
 
-            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
-            double verticalOffset = (1.0 * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
+                if (result.ShapeKind == Helpers.RecognizedShapeKind.Ellipse)
+                {
+                    if (result.Points.Count > 1)
+                    {
+                        var stroke = _strokeBuilder.CreateStroke(result.Points);
+                        stroke.PointTransform = System.Numerics.Matrix3x2.Identity;
+                        stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
 
-            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, 1.0f);
+                        SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
+                    }
+                }
+                else if (result.ShapeKind == Helpers.RecognizedShapeKind.Polygon)
+                {
+                    if (result.Points.Count >= 2)
+                    {
+                        for (int i = 0; i < result.Points.Count; i++)
+                        {
+                            var linePoints = new List<Windows.UI.Input.Inking.InkPoint>
+                            {
+                                new(result.Points[i], 0.5f),
+                                new(result.Points[(i + 1) % result.Points.Count], 0.5f)
+                            };
+
+                            var stroke = _strokeBuilder.CreateStrokeFromInkPoints(linePoints, System.Numerics.Matrix3x2.Identity);
+                            stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+
+                            SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
+                        }
+                    }
+                }
+
+                SketchCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
         }
 
-        /// <summary>
-        /// 缩小画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickCanvasZoomOut(object sender, RoutedEventArgs e)
-        {
-            float currentZoom = SketchScrollViewer.ZoomFactor;
-            float zoom = Math.Max(1, (currentZoom - 0.5f));
+        #region ControlBar
 
-            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
-            double horizontalOffset = (zoom * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
-
-            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
-            double verticalOffset = (zoom * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
-
-            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
-        }
-
-        /// <summary>
-        /// 增大画布缩放
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickCanvasZoomIn(object sender, RoutedEventArgs e)
-        {
-            float currentZoom = SketchScrollViewer.ZoomFactor;
-            float zoom = Math.Min(5, (currentZoom + 0.5f));
-
-            double viewportCenterHorizontalOffsetRatio = SketchScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchScrollViewer.HorizontalOffset + (SketchScrollViewer.ViewportWidth / 2)) / SketchScrollViewer.ExtentWidth;
-            double horizontalOffset = (zoom * SketchScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchScrollViewer.ViewportWidth / 2);
-
-            double viewportCenterVerticalOffsetRatio = SketchScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchScrollViewer.VerticalOffset + (SketchScrollViewer.ViewportHeight / 2)) / SketchScrollViewer.ExtentHeight;
-            double verticalOffset = (zoom * SketchScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchScrollViewer.ViewportHeight / 2);
-
-            SketchScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
-        }
-
-        #endregion
-
-        #region 设置栏
-
-        /// <summary>
-        /// 应用程序窗口尺寸变化，更新全屏按钮状态
-        /// </summary>
-        private void OnWindowSizeChanged()
-        {
-            FullscreenButton.IsChecked = ApplicationView.GetForCurrentView().IsFullScreenMode;
-        }
-
-        /// <summary>
-        /// 全屏
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnCheckFullscreen(object sender, RoutedEventArgs e)
+        private void EnterFullscreen()
         {
             var view = ApplicationView.GetForCurrentView();
             if (!view.IsFullScreenMode)
             {
                 view.TryEnterFullScreenMode();
-                VisualStateManager.GoToState(this, "FullScreenState", false);
+                _ = VisualStateManager.GoToState(this, "FullScreenState", false);
             }
         }
 
-        /// <summary>
-        /// 退出全屏
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnUncheckFullscreen(object sender, RoutedEventArgs e)
+        private void ExitFullscreen()
         {
             var view = ApplicationView.GetForCurrentView();
             if (view.IsFullScreenMode)
             {
                 view.ExitFullScreenMode();
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.Auto;
-                VisualStateManager.GoToState(this, "NormalState", false);
+                _ = VisualStateManager.GoToState(this, "NormalState", false);
             }
         }
 
-        /// <summary>
-        /// 小窗置顶
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void OnCheckTopmost(object sender, RoutedEventArgs e)
+        private async Task EnterCompactOverlay()
         {
             if (ApplicationView.GetForCurrentView().IsViewModeSupported(ApplicationViewMode.CompactOverlay))
             {
                 ViewModePreferences compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
                 compactOptions.CustomSize = new Windows.Foundation.Size(960, 740);
-                _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
-                VisualStateManager.GoToState(this, "PiPState", false);
+                bool success = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.CompactOverlay, compactOptions);
+                if (success)
+                {
+                    _ = VisualStateManager.GoToState(this, "PiPState", false);
+                }
             }
         }
 
-        /// <summary>
-        /// 取消小窗置顶
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private async void OnUncheckTopmost(object sender, RoutedEventArgs e)
+        private async Task ExitCompactOverlay()
         {
-            _ = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.Default);
-            VisualStateManager.GoToState(this, "NormalState", false);
-        }
-
-        /// <summary>
-        /// 点击打开设置
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickSettings(object sender, RoutedEventArgs e)
-        {
-            try
+            bool success = await ApplicationView.GetForCurrentView().TryEnterViewModeAsync(ApplicationViewMode.Default);
+            if (success)
             {
-                SettingsTeachingTip.IsOpen = true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
+                _ = VisualStateManager.GoToState(this, "NormalState", false);
             }
         }
 
-        /// <summary>
-        /// 点击关闭设置
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnClickCloseSettings(object sender, RoutedEventArgs e)
+        private void FullscreenButton_Checked(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                SettingsTeachingTip.IsOpen = false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+            EnterFullscreen();
+        }
+
+        private void FullscreenButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ExitFullscreen();
+        }
+
+        private void TopmostButton_Checked(object sender, RoutedEventArgs e)
+        {
+            _ = EnterCompactOverlay();
+        }
+
+        private void TopmostButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _ = ExitCompactOverlay();
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            _ = SaveSketchToFileAsync();
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsTeachingTip.IsOpen = true;
+        }
+
+        private void CloseSettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsTeachingTip.IsOpen = false;
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsTeachingTip.IsOpen = false;
         }
 
         #endregion
 
-        #region 设置
+        #region FeatureBar
 
-        /// <summary>
-        /// 设置
-        /// </summary>
-        private readonly SettingsService _appSettings = SettingsService.Instance;
-
-        /// <summary>
-        /// 应用程序版本号
-        /// </summary>
-        private string _appVersion = string.Empty;
-
-        /// <summary>
-        /// 点击切换主题
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SwitchAppTheme();
-            SettingsTeachingTip.IsOpen = false;
-        }
-
-        /// <summary>
-        /// 点击切换左右手模式
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnHandModeSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SwitchAppHand();
-            SettingsTeachingTip.IsOpen = false;
-        }
-
-        /// <summary>
-        /// 获取应用程序的版本号
-        /// </summary>
-        /// <returns></returns>
-        private void LoadAppVersion()
+        private void EnableDrawWithHand()
         {
             try
             {
-                Package package = Package.Current;
-                PackageId packageId = package.Id;
-                PackageVersion version = packageId.Version;
-                _appVersion = string.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build);
+                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen | Windows.UI.Core.CoreInputDeviceTypes.Touch;
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                System.Diagnostics.Trace.WriteLine(ex.Message);
             }
+        }
+
+        private void DisableDrawWithHand()
+        {
+            try
+            {
+                SketchCanvas.InkPresenter.InputDeviceTypes = Windows.UI.Core.CoreInputDeviceTypes.Mouse | Windows.UI.Core.CoreInputDeviceTypes.Pen;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private void EnableShapeAnalyzer()
+        {
+            try
+            {
+                _shapeRecognitionEnabled = true;
+                _shapeRecognizer.Clear();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private void DisableShapeAnalyzer()
+        {
+            try
+            {
+                _shapeRecognitionEnabled = false;
+                _shapeRecognizer.Clear();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private async Task<bool> SetPictureBackground()
+        {
+            try
+            {
+                var picker = new Windows.Storage.Pickers.FileOpenPicker
+                {
+                    ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail,
+                    SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary
+                };
+
+                picker.FileTypeFilter.Add(".jpg");
+                picker.FileTypeFilter.Add(".jpeg");
+                picker.FileTypeFilter.Add(".png");
+
+                Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+                if (file is not null)
+                {
+                    using Windows.Storage.Streams.IRandomAccessStream stream = await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                    var bitmapImage = new BitmapImage();
+                    await bitmapImage.SetSourceAsync(stream);
+                    SketchCanvasBackgroundImage.Source = bitmapImage;
+                    SketchCanvasBackgroundImage.Visibility = Visibility.Visible;
+                }
+
+                return file is not null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        private void RemovePictureBackground()
+        {
+            try
+            {
+                SketchCanvasBackgroundImage.Visibility = Visibility.Collapsed;
+                SketchCanvasBackgroundImage.Source = null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+            }
+        }
+
+        private void FingerToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            EnableDrawWithHand();
+        }
+
+        private void FingerToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DisableDrawWithHand();
+        }
+
+        private void ShapeToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            EnableShapeAnalyzer();
+        }
+
+        private void ShapeToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DisableShapeAnalyzer();
+        }
+
+        private async void PictureToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!await SetPictureBackground())
+            {
+                if (sender is ToggleButton toggleButton)
+                {
+                    toggleButton.IsChecked = false;
+                }
+            }
+        }
+
+        private void PictureToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            RemovePictureBackground();
         }
 
         #endregion
 
+        #region StatusBar
+
+        private void ZoomOutCanvas()
+        {
+            float currentZoom = SketchCanvasScrollViewer.ZoomFactor;
+            float zoom = Math.Max(1, (currentZoom - 0.5f));
+
+            double viewportCenterHorizontalOffsetRatio = SketchCanvasScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchCanvasScrollViewer.HorizontalOffset + (SketchCanvasScrollViewer.ViewportWidth / 2)) / SketchCanvasScrollViewer.ExtentWidth;
+            double horizontalOffset = (zoom * SketchCanvasScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchCanvasScrollViewer.ViewportWidth / 2);
+
+            double viewportCenterVerticalOffsetRatio = SketchCanvasScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchCanvasScrollViewer.VerticalOffset + (SketchCanvasScrollViewer.ViewportHeight / 2)) / SketchCanvasScrollViewer.ExtentHeight;
+            double verticalOffset = (zoom * SketchCanvasScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchCanvasScrollViewer.ViewportHeight / 2);
+
+            SketchCanvasScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
+        }
+
+        private void ZoomInCanvas()
+        {
+            float currentZoom = SketchCanvasScrollViewer.ZoomFactor;
+            float zoom = Math.Min(5, (currentZoom + 0.5f));
+
+            double viewportCenterHorizontalOffsetRatio = SketchCanvasScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchCanvasScrollViewer.HorizontalOffset + (SketchCanvasScrollViewer.ViewportWidth / 2)) / SketchCanvasScrollViewer.ExtentWidth;
+            double horizontalOffset = (zoom * SketchCanvasScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchCanvasScrollViewer.ViewportWidth / 2);
+
+            double viewportCenterVerticalOffsetRatio = SketchCanvasScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchCanvasScrollViewer.VerticalOffset + (SketchCanvasScrollViewer.ViewportHeight / 2)) / SketchCanvasScrollViewer.ExtentHeight;
+            double verticalOffset = (zoom * SketchCanvasScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchCanvasScrollViewer.ViewportHeight / 2);
+
+            SketchCanvasScrollViewer.ChangeView(horizontalOffset, verticalOffset, zoom);
+        }
+
+        private void ResetCanvasZoomFactor()
+        {
+            float currentZoom = SketchCanvasScrollViewer.ZoomFactor;
+
+            double viewportCenterHorizontalOffsetRatio = SketchCanvasScrollViewer.ScrollableWidth <= 0 ? 0.5 : (SketchCanvasScrollViewer.HorizontalOffset + (SketchCanvasScrollViewer.ViewportWidth / 2)) / SketchCanvasScrollViewer.ExtentWidth;
+            double horizontalOffset = (1.0 * SketchCanvasScrollViewer.ExtentWidth / currentZoom * viewportCenterHorizontalOffsetRatio) - (SketchCanvasScrollViewer.ViewportWidth / 2);
+
+            double viewportCenterVerticalOffsetRatio = SketchCanvasScrollViewer.ScrollableHeight <= 0 ? 0.5 : (SketchCanvasScrollViewer.VerticalOffset + (SketchCanvasScrollViewer.ViewportHeight / 2)) / SketchCanvasScrollViewer.ExtentHeight;
+            double verticalOffset = (1.0 * SketchCanvasScrollViewer.ExtentHeight / currentZoom * viewportCenterVerticalOffsetRatio) - (SketchCanvasScrollViewer.ViewportHeight / 2);
+
+            SketchCanvasScrollViewer.ChangeView(horizontalOffset, verticalOffset, 1.0f);
+        }
+
+        private void ZoomOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            ZoomOutCanvas();
+        }
+
+        private void ZoomInButton_Click(object sender, RoutedEventArgs e)
+        {
+            ZoomInCanvas();
+        }
+
+        private void ZoomResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            ResetCanvasZoomFactor();
+        }
+
+        #endregion
     }
 }

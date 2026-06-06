@@ -124,7 +124,7 @@
     <value>Save</value>
   </data>
   <data name="DisplayDesc" xml:space="preserve">
-    <value>Easy sketch.</value>
+    <value>Summer is a clean sketchpad with shape recognition, background tracing, and export features.</value>
   </data>
   <data name="DisplayName" xml:space="preserve">
     <value>Summer</value>
@@ -136,7 +136,7 @@
     <value>Draw with finger</value>
   </data>
   <data name="PackageName" xml:space="preserve">
-    <value>Summer Sketch</value>
+    <value>Summer</value>
   </data>
   <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Import a picture as background</value>
