@@ -122,9 +122,9 @@ namespace Summer
                         RequestedTheme = this.ActualTheme,
                         Title = resourceLoader.GetString("SaveConfirmTitle"),
                         Content = resourceLoader.GetString("SaveConfirmContent"),
-                        PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButton"),
-                        SecondaryButtonText = resourceLoader.GetString("DonotSaveButton"),
-                        CloseButtonText = resourceLoader.GetString("CancelSaveButton"),
+                        PrimaryButtonText = resourceLoader.GetString("ConfirmSaveButtonContent"),
+                        SecondaryButtonText = resourceLoader.GetString("DoNotSaveButtonContent"),
+                        CloseButtonText = resourceLoader.GetString("CancelSaveButtonContent"),
                         DefaultButton = ContentDialogButton.Close,
                         Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
                     };
@@ -685,22 +685,22 @@ namespace Summer
             }
         }
 
-        private void FingerToggleButton_Checked(object sender, RoutedEventArgs e)
+        private void DrawWithHandToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             EnableDrawWithHand();
         }
 
-        private void FingerToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        private void DrawWithHandToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {
             DisableDrawWithHand();
         }
 
-        private void ShapeToggleButton_Checked(object sender, RoutedEventArgs e)
+        private void ShapeRecognizeToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             EnableShapeAnalyzer();
         }
 
-        private void ShapeToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        private void ShapeRecognizeToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {
             DisableShapeAnalyzer();
         }

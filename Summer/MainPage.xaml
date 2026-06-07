@@ -50,10 +50,10 @@
 
         <Grid x:Name="StatusBarGrid" Grid.Column="1" Grid.Row="2" Padding="8,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel x:Name="StatusBarStackPanel" Spacing="8" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                <Button x:Name="ZoomOutButton" x:Uid="ZoomOutTip" Content="&#xE71F;" Padding="0" Height="38" Width="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="ZoomOutButton_Click"/>
-                <Button x:Name="ZoomInButton" x:Uid="ZoomInTip" Content="&#xE12E;" Padding="0" Height="38" Width="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="ZoomInButton_Click"/>
+                <Button x:Name="ZoomOutButton" x:Uid="ZoomOutButton" Content="&#xE71F;" Padding="0" Height="38" Width="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="ZoomOutButton_Click"/>
+                <Button x:Name="ZoomInButton" x:Uid="ZoomInButton" Content="&#xE12E;" Padding="0" Height="38" Width="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="ZoomInButton_Click"/>
                 <Border Width="1" Height="26" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                <Button x:Name="ZoomResetButton" x:Uid="ZoomResetTip" FontSize="14" Padding="0" Height="38" Width="64" FontFamily="Segoe Script" Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center" Click="ZoomResetButton_Click">
+                <Button x:Name="ZoomResetButton" x:Uid="ZoomResetButton" FontSize="14" Padding="0" Height="38" Width="64" FontFamily="Segoe Script" Background="Transparent" BorderBrush="Transparent" VerticalAlignment="Center" Click="ZoomResetButton_Click">
                     <TextBlock>
                         <Run x:Name="CanvasZoomFactorTextBlock" Text="100"/>
                         <Run Text="%"/>
@@ -67,27 +67,27 @@
                         <BitmapImage UriSource="Assets/Logo/summer_logo.png" DecodePixelHeight="72"/>
                     </Image.Source>
                 </Image>
-                <TextBlock Text="Summer" FontFamily="Segoe Script" FontSize="18" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <TextBlock Text="Summer" Margin="0,1,0,-1" FontFamily="Segoe Script" FontSize="18" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
 
         <Grid x:Name="FeatureBarGrid" Grid.Column="2" Grid.Row="1" Padding="0,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Spacing="8" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
-                <ToggleButton x:Name="FingerToggleButton" x:Uid="FingerTip" Content="&#xED5F;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="FingerToggleButton_Checked" Unchecked="FingerToggleButton_Unchecked"/>
-                <ToggleButton x:Name="ShapeToggleButton" x:Uid="ShapeTip" Content="&#xF157;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="ShapeToggleButton_Checked" Unchecked="ShapeToggleButton_Unchecked"/>
+                <ToggleButton x:Name="DrawWithHandToggleButton" x:Uid="DrawWithHandButton" Content="&#xED5F;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="DrawWithHandToggleButton_Checked" Unchecked="DrawWithHandToggleButton_Unchecked"/>
+                <ToggleButton x:Name="ShapeRecognizeToggleButton" x:Uid="ShapeRecognizeButton" Content="&#xF157;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="ShapeRecognizeToggleButton_Checked" Unchecked="ShapeRecognizeToggleButton_Unchecked"/>
                 <Border Width="26" Height="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                <ToggleButton x:Name="PictureToggleButton" x:Uid="PictureTip" Content="&#xE91B;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="PictureToggleButton_Checked" Unchecked="PictureToggleButton_Unchecked"/>
+                <ToggleButton x:Name="PictureToggleButton" x:Uid="PictureBackgroundButton" Content="&#xE91B;" Padding="0" Width="38" Height="38" IsChecked="False" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Checked="PictureToggleButton_Checked" Unchecked="PictureToggleButton_Unchecked"/>
             </StackPanel>
         </Grid>
 
         <Grid x:Name="ControlBarGrid" Grid.Column="0" Grid.Row="1" Padding="0,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Spacing="8" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
-                <ToggleButton x:Name="FullscreenButton" Padding="0" Height="38" Width="38" HorizontalAlignment="Center" Checked="FullscreenButton_Checked" Unchecked="FullscreenButton_Unchecked">
+                <ToggleButton x:Name="FullscreenButton" x:Uid="FullscreenButton" Padding="0" Height="38" Width="38" HorizontalAlignment="Center" Checked="FullscreenButton_Checked" Unchecked="FullscreenButton_Unchecked">
                     <ToggleButton.Content>
                         <FontIcon Glyph="&#xE1D9;" FontSize="14" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                     </ToggleButton.Content>
                 </ToggleButton>
-                <ToggleButton x:Name="TopmostButton" Padding="0" Height="38" Width="38" HorizontalAlignment="Center" Checked="TopmostButton_Checked" Unchecked="TopmostButton_Unchecked">
+                <ToggleButton x:Name="TopmostButton" x:Uid="TopmostButton" Padding="0" Height="38" Width="38" HorizontalAlignment="Center" Checked="TopmostButton_Checked" Unchecked="TopmostButton_Unchecked">
                     <ToggleButton.Content>
                         <FontIcon Glyph="&#xE141;" FontSize="14" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                     </ToggleButton.Content>
@@ -95,9 +95,9 @@
             </StackPanel>
 
             <StackPanel Spacing="8" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                <Button x:Name="SaveButton" x:Uid="SaveTip" Content="&#xE105;" Padding="0" Width="38" Height="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="SaveButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button x:Name="SaveButton" x:Uid="SaveButton" Content="&#xE105;" Padding="0" Width="38" Height="38" FontSize="16" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="SaveButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 <Border Width="26" Height="1" Opacity="0.1" Background="{ThemeResource ApplicationForegroundThemeBrush}"/>
-                <Button x:Name="SettingsButton" Padding="0" Height="38" Width="38" Click="SettingsButton_Click" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                <Button x:Name="SettingsButton" x:Uid="SettingsButton" Padding="0" Height="38" Width="38" Click="SettingsButton_Click" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                     <Button.Content>
                         <muxc:AnimatedIcon Height="16" Width="16">
                             <muxc:AnimatedIcon.Source>

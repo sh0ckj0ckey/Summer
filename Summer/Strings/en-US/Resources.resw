@@ -117,28 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CancelSaveButton" xml:space="preserve">
+  <data name="CancelSaveButtonContent" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="ConfirmSaveButton" xml:space="preserve">
+  <data name="ConfirmSaveButtonContent" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="DisplayDesc" xml:space="preserve">
+  <data name="DisplayDescription" xml:space="preserve">
     <value>Summer is a clean sketchpad with shape recognition, background tracing, and export features.</value>
   </data>
   <data name="DisplayName" xml:space="preserve">
     <value>Summer</value>
   </data>
-  <data name="DonotSaveButton" xml:space="preserve">
+  <data name="DoNotSaveButtonContent" xml:space="preserve">
     <value>Don't save</value>
   </data>
-  <data name="FingerTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="DrawWithHandButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Draw with finger</value>
   </data>
   <data name="PackageName" xml:space="preserve">
     <value>Summer</value>
   </data>
-  <data name="PictureTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="PictureBackgroundButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Import a picture as background</value>
   </data>
   <data name="SaveConfirmContent" xml:space="preserve">
@@ -147,19 +147,28 @@
   <data name="SaveConfirmTitle" xml:space="preserve">
     <value>Do you want to save your work?</value>
   </data>
-  <data name="SaveTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="SaveButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Save the sketch</value>
   </data>
-  <data name="ShapeTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ShapeRecognizeButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Recognize shapes</value>
   </data>
-  <data name="ZoomInTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ZoomInButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Zoom In</value>
   </data>
-  <data name="ZoomOutTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ZoomOutButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Zoom Out</value>
   </data>
-  <data name="ZoomResetTip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ZoomResetButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Click to reset to 100%</value>
+  </data>
+  <data name="FullscreenButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
+  <data name="TopmostButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Always on top</value>
+  </data>
+  <data name="SettingsButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
   </data>
 </root>
