@@ -404,7 +404,7 @@ namespace Summer
                     SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary
                 };
 
-                savePicker.FileTypeChoices.Add("PNG", [".png"]);
+                savePicker.FileTypeChoices.Add("PNG", new List<string> { ".png" });
                 savePicker.SuggestedFileName = "Summer Sketch";
 
                 Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
