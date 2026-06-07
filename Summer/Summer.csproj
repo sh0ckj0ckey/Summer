@@ -15,6 +15,16 @@
         <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
         <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
         <EnableMsixTooling>true</EnableMsixTooling>
+        <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+        <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+        <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+        <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+        <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+        <GenerateTestArtifacts>True</GenerateTestArtifacts>
+        <AppxBundle>Always</AppxBundle>
+        <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+        <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+        <PackageCertificateKeyFile>Summer_TemporaryKey.pfx</PackageCertificateKeyFile>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
