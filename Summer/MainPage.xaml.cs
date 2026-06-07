@@ -6,6 +6,7 @@ using Windows.ApplicationModel;
 using Windows.ApplicationModel.Core;
 using Windows.ApplicationModel.Resources;
 using Windows.UI;
+using Windows.UI.Input.Inking;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -23,11 +24,17 @@ namespace Summer
 
         public string AppVersion { get; }
 
+        private readonly InkStrokeBuilder _strokeBuilder = new();
+
         private readonly Helpers.InkShapeRecognizer _shapeRecognizer = new();
 
-        private readonly Windows.UI.Input.Inking.InkStrokeBuilder _strokeBuilder = new();
+        private readonly List<InkStroke> _bufferedShapeStrokes = [];
+
+        private readonly DispatcherTimer _shapeRecognitionTimer = new();
 
         private bool _shapeRecognitionEnabled = false;
+
+        private bool _isShapeRecognitionRunning = false;
 
         private bool _hasUnsavedChanges = false;
 
@@ -70,6 +77,9 @@ namespace Summer
             ListenCanvasSizeChanged();
             ListenInkChanged();
             ListenInkStrokesCollected();
+            ListenInkStrokeStarted();
+
+            InitializeShapeRecognizerTimer();
 
             this.AppVersion = $"{Package.Current.Id.Version.Major}.{Package.Current.Id.Version.Minor}.{Package.Current.Id.Version.Build}";
         }
@@ -182,7 +192,7 @@ namespace Summer
 
         private void ListenInkStrokesCollected()
         {
-            SketchCanvas.InkPresenter.StrokesCollected += async (_, args) =>
+            SketchCanvas.InkPresenter.StrokesCollected += (_, args) =>
             {
                 try
                 {
@@ -196,12 +206,31 @@ namespace Summer
                         return;
                     }
 
-                    var results = await _shapeRecognizer.AnalyzeAsync(args.Strokes);
+                    _shapeRecognitionTimer.Stop();
 
-                    foreach (var result in results)
+                    _bufferedShapeStrokes.AddRange(args.Strokes);
+
+                    _shapeRecognitionTimer.Start();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                }
+            };
+        }
+
+        private void ListenInkStrokeStarted()
+        {
+            SketchCanvas.InkPresenter.StrokeInput.StrokeStarted += (_, _) =>
+            {
+                try
+                {
+                    if (!_shapeRecognitionEnabled)
                     {
-                        ReplaceRecognizedShape(result);
+                        return;
                     }
+
+                    _shapeRecognitionTimer.Stop();
                 }
                 catch (Exception ex)
                 {
@@ -232,6 +261,58 @@ namespace Summer
             {
                 System.Diagnostics.Trace.WriteLine(ex.Message);
             }
+        }
+
+        private void InitializeShapeRecognizerTimer()
+        {
+            _shapeRecognitionTimer.Interval = TimeSpan.FromSeconds(1);
+            _shapeRecognitionTimer.Tick += async (_, _) =>
+            {
+                try
+                {
+                    _shapeRecognitionTimer.Stop();
+
+                    if (!_shapeRecognitionEnabled)
+                    {
+                        return;
+                    }
+
+                    if (_isShapeRecognitionRunning)
+                    {
+                        _shapeRecognitionTimer.Start();
+                        return;
+                    }
+
+                    if (_bufferedShapeStrokes.Count <= 0)
+                    {
+                        return;
+                    }
+
+                    _isShapeRecognitionRunning = true;
+
+                    try
+                    {
+                        var strokesToAnalyze = new List<InkStroke>(_bufferedShapeStrokes);
+                        _bufferedShapeStrokes.Clear();
+
+                        var results = await _shapeRecognizer.AnalyzeAsync(strokesToAnalyze);
+
+                        foreach (var result in results)
+                        {
+                            ReplaceRecognizedShape(result);
+                        }
+                    }
+                    finally
+                    {
+                        _isShapeRecognitionRunning = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _bufferedShapeStrokes.Clear();
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                }
+            };
         }
 
         private void UpdateAppTheme()
@@ -386,16 +467,18 @@ namespace Summer
                 {
                     if (result.Points.Count >= 2)
                     {
+                        var drawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+
                         for (int i = 0; i < result.Points.Count; i++)
                         {
-                            var linePoints = new List<Windows.UI.Input.Inking.InkPoint>
+                            var linePoints = new List<InkPoint>
                             {
                                 new(result.Points[i], 0.5f),
                                 new(result.Points[(i + 1) % result.Points.Count], 0.5f)
                             };
 
                             var stroke = _strokeBuilder.CreateStrokeFromInkPoints(linePoints, System.Numerics.Matrix3x2.Identity);
-                            stroke.DrawingAttributes = SketchCanvas.InkPresenter.CopyDefaultDrawingAttributes();
+                            stroke.DrawingAttributes = drawingAttributes;
 
                             SketchCanvas.InkPresenter.StrokeContainer.AddStroke(stroke);
                         }
@@ -530,6 +613,9 @@ namespace Summer
             {
                 _shapeRecognitionEnabled = true;
                 _shapeRecognizer.Clear();
+                _bufferedShapeStrokes.Clear();
+                _shapeRecognitionTimer.Stop();
+                _isShapeRecognitionRunning = false;
             }
             catch (Exception ex)
             {
@@ -543,6 +629,9 @@ namespace Summer
             {
                 _shapeRecognitionEnabled = false;
                 _shapeRecognizer.Clear();
+                _bufferedShapeStrokes.Clear();
+                _shapeRecognitionTimer.Stop();
+                _isShapeRecognitionRunning = false;
             }
             catch (Exception ex)
             {
