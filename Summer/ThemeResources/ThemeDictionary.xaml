@@ -5,8 +5,8 @@
         <ResourceDictionary x:Key="Dark">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <BitmapImage x:Key="SKETCHBK_IMG" UriSource="ms-appx:///Assets/Background/sketch_background_dark.png"/>
-                    <LinearGradientBrush x:Key="SETTINGS_LINE_HORIZONTAL_BK" StartPoint="1,0" EndPoint="0,0">
+                    <BitmapImage x:Key="SketchCanvasTextureImage" UriSource="ms-appx:///Assets/Background/sketch_background_dark.png"/>
+                    <LinearGradientBrush x:Key="SettingsHorizontalSeparatorLineBackground" StartPoint="1,0" EndPoint="0,0">
                         <LinearGradientBrush.GradientStops>
                             <GradientStop Color="#00FFFFFF" Offset="0"/>
                             <GradientStop Color="#E6FFFFFF" Offset="0.3"/>
@@ -14,7 +14,7 @@
                             <GradientStop Color="#00FFFFFF" Offset="1"/>
                         </LinearGradientBrush.GradientStops>
                     </LinearGradientBrush>
-                    <LinearGradientBrush x:Key="SETTINGS_LINE_VERTICAL_BK" StartPoint="0,0" EndPoint="0,1">
+                    <LinearGradientBrush x:Key="SettingsVerticalSeparatorLineBackground" StartPoint="0,0" EndPoint="0,1">
                         <LinearGradientBrush.GradientStops>
                             <GradientStop Color="#00FFFFFF" Offset="0"/>
                             <GradientStop Color="#E6FFFFFF" Offset="0.3"/>
@@ -28,8 +28,8 @@
         <ResourceDictionary x:Key="Light">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary>
-                    <BitmapImage x:Key="SKETCHBK_IMG" UriSource="ms-appx:///Assets/Background/sketch_background_light.png"/>
-                    <LinearGradientBrush x:Key="SETTINGS_LINE_HORIZONTAL_BK" StartPoint="1,0" EndPoint="0,0">
+                    <BitmapImage x:Key="SketchCanvasTextureImage" UriSource="ms-appx:///Assets/Background/sketch_background_light.png"/>
+                    <LinearGradientBrush x:Key="SettingsHorizontalSeparatorLineBackground" StartPoint="1,0" EndPoint="0,0">
                         <LinearGradientBrush.GradientStops>
                             <GradientStop Color="#00404040" Offset="0"/>
                             <GradientStop Color="#E6404040" Offset="0.3"/>
@@ -37,7 +37,7 @@
                             <GradientStop Color="#00404040" Offset="1"/>
                         </LinearGradientBrush.GradientStops>
                     </LinearGradientBrush>
-                    <LinearGradientBrush x:Key="SETTINGS_LINE_VERTICAL_BK" StartPoint="0,0" EndPoint="0,1">
+                    <LinearGradientBrush x:Key="SettingsVerticalSeparatorLineBackground" StartPoint="0,0" EndPoint="0,1">
                         <LinearGradientBrush.GradientStops>
                             <GradientStop Color="#00404040" Offset="0"/>
                             <GradientStop Color="#E6404040" Offset="0.3"/>

@@ -30,7 +30,7 @@
 
         <Grid x:Name="CanvasGrid" Grid.Column="1" Grid.Row="1" CornerRadius="4" Translation="0,0,32" Shadow="{ThemeResource CommonShadow}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.Background>
-                <ImageBrush ImageSource="{ThemeResource SKETCHBK_IMG}" Stretch="UniformToFill" Opacity="0.3"/>
+                <ImageBrush ImageSource="{ThemeResource SketchCanvasTextureImage}" Stretch="UniformToFill" Opacity="0.3"/>
             </Grid.Background>
             <ScrollViewer x:Name="SketchCanvasScrollViewer" ZoomMode="Enabled" MinZoomFactor="1" MaxZoomFactor="5" Background="Transparent"
                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -135,11 +135,11 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Row="1" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SETTINGS_LINE_HORIZONTAL_BK}"/>
-                    <Border Grid.Row="3" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SETTINGS_LINE_HORIZONTAL_BK}"/>
-                    <Border Grid.Row="5" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SETTINGS_LINE_HORIZONTAL_BK}"/>
-                    <Border Grid.Row="7" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SETTINGS_LINE_HORIZONTAL_BK}"/>
-                    <Border Grid.Column="1" Grid.RowSpan="8" Width="1" Opacity="0.1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="4,0,4,0" Background="{ThemeResource SETTINGS_LINE_VERTICAL_BK}"/>
+                    <Border Grid.Row="1" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SettingsHorizontalSeparatorLineBackground}"/>
+                    <Border Grid.Row="3" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SettingsHorizontalSeparatorLineBackground}"/>
+                    <Border Grid.Row="5" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SettingsHorizontalSeparatorLineBackground}"/>
+                    <Border Grid.Row="7" Grid.ColumnSpan="3" Height="1" Opacity="0.1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,4,0,4" Background="{ThemeResource SettingsHorizontalSeparatorLineBackground}"/>
+                    <Border Grid.Column="1" Grid.RowSpan="8" Width="1" Opacity="0.1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="4,0,4,0" Background="{ThemeResource SettingsVerticalSeparatorLineBackground}"/>
 
                     <FontIcon Grid.Column="0" Grid.Row="0" Glyph="&#xE9E9;" FontSize="20" FontFamily="{ThemeResource SymbolThemeFontFamily}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Button x:Name="CloseSettingsButton" Grid.Column="2" Grid.Row="0" Content="&#xEDAE;" Margin="0" Padding="6" BorderBrush="Transparent" Background="Transparent" FontSize="14" FontFamily="{ThemeResource SymbolThemeFontFamily}" Click="CloseSettingsButton_Click" HorizontalAlignment="Right" VerticalAlignment="Center"/>
