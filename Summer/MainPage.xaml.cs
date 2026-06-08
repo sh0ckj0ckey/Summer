@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.ApplicationModel;
@@ -11,6 +12,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Summer
@@ -63,6 +65,7 @@ namespace Summer
             this.AppSettings.AppearanceSettingChanged += (_, _) =>
             {
                 UpdateAppTheme();
+                UpdateInkColorForTheme();
             };
 
             this.AppSettings.HandednessModeSettingsChanged += (_, _) =>
@@ -251,11 +254,35 @@ namespace Summer
                 drawingAttributes.FitToCurve = true;
                 SketchCanvas.InkPresenter.UpdateDefaultDrawingAttributes(drawingAttributes);
 
-                if (SketchToolbar.GetToolButton(InkToolbarTool.BallpointPen) is InkToolbarBallpointPenButton ballpointPen)
+                //if (SketchToolbar.GetToolButton(InkToolbarTool.BallpointPen) is InkToolbarBallpointPenButton ballpointPen)
+                //{
+                //    ballpointPen.SelectedBrushIndex = this.AppSettings.Appearance == 1 ? 1 : 0;
+                //    SketchToolbar.ActiveTool = ballpointPen;
+                //}
+
+                Color targetColor = this.AppSettings.Appearance == 1 ? Colors.White : Colors.Black;
+
+                int ballpointIndex = BallpointPenInkToolbarButton.Palette
+                    .Select((brush, index) => new { brush, index })
+                    .FirstOrDefault(x => x.brush is SolidColorBrush solidColorBrush && solidColorBrush.Color == targetColor)
+                    ?.index ?? -1;
+
+                if (ballpointIndex >= 0)
                 {
-                    ballpointPen.SelectedBrushIndex = this.AppSettings.Appearance == 1 ? 1 : 0;
-                    SketchToolbar.ActiveTool = ballpointPen;
+                    BallpointPenInkToolbarButton.SelectedBrushIndex = ballpointIndex;
                 }
+
+                int pencilIndex = PencilInkToolbarButton.Palette
+                    .Select((brush, index) => new { brush, index })
+                    .FirstOrDefault(x => x.brush is SolidColorBrush solidColorBrush && solidColorBrush.Color == targetColor)
+                    ?.index ?? -1;
+
+                if (pencilIndex >= 0)
+                {
+                    PencilInkToolbarButton.SelectedBrushIndex = pencilIndex;
+                }
+
+                SketchToolbar.ActiveTool = BallpointPenInkToolbarButton;
             }
             catch (Exception ex)
             {
@@ -345,6 +372,46 @@ namespace Summer
             catch (System.Exception ex)
             {
                 System.Diagnostics.Trace.WriteLine($"Failed to UpdateAppTheme: {ex}");
+            }
+        }
+
+        private void UpdateInkColorForTheme()
+        {
+            try
+            {
+                Color targetColor = this.AppSettings.Appearance == 1 ? Colors.White : Colors.Black;
+
+                if (BallpointPenInkToolbarButton.SelectedBrush is SolidColorBrush ballpointBrush &&
+                    (ballpointBrush.Color == Colors.Black || ballpointBrush.Color == Colors.White))
+                {
+                    int ballpointIndex = BallpointPenInkToolbarButton.Palette
+                        .Select((brush, index) => new { brush, index })
+                        .FirstOrDefault(x => x.brush is SolidColorBrush solidColorBrush && solidColorBrush.Color == targetColor)
+                        ?.index ?? -1;
+
+                    if (ballpointIndex >= 0)
+                    {
+                        BallpointPenInkToolbarButton.SelectedBrushIndex = ballpointIndex;
+                    }
+                }
+
+                if (PencilInkToolbarButton.SelectedBrush is SolidColorBrush pencilBrush &&
+                    (pencilBrush.Color == Colors.Black || pencilBrush.Color == Colors.White))
+                {
+                    int pencilIndex = PencilInkToolbarButton.Palette
+                        .Select((brush, index) => new { brush, index })
+                        .FirstOrDefault(x => x.brush is SolidColorBrush solidColorBrush && solidColorBrush.Color == targetColor)
+                        ?.index ?? -1;
+
+                    if (pencilIndex >= 0)
+                    {
+                        PencilInkToolbarButton.SelectedBrushIndex = pencilIndex;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"Failed to UpdateInkColorForTheme: {ex}");
             }
         }
 
