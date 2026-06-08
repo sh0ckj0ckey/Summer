@@ -46,11 +46,11 @@
         <Grid x:Name="ToolBarGrid" Grid.Column="1" Grid.Row="0" Canvas.ZIndex="1" Margin="8,0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button Margin="3" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <InkToolbar x:Name="SketchToolbar" TargetInkCanvas="{x:Bind SketchCanvas}" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <InkToolbarBallpointPenButton/>
-                <InkToolbarPencilButton/>
-                <InkToolbarHighlighterButton/>
-                <InkToolbarEraserButton/>
-                <InkToolbarStencilButton/>
+                <InkToolbarBallpointPenButton x:Name="BallpointPenInkToolbarButton"/>
+                <InkToolbarPencilButton x:Name="PencilInkToolbarButton"/>
+                <InkToolbarHighlighterButton x:Name="HighlighterInkToolbarButton"/>
+                <InkToolbarEraserButton x:Name="EraserInkToolbarButton"/>
+                <InkToolbarStencilButton x:Name="StencilInkToolbarButton"/>
             </InkToolbar>
         </Grid>
 
