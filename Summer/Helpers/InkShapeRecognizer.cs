@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
+using WinRT;
 
 namespace Summer.Helpers
 {
@@ -58,7 +59,18 @@ namespace Summer.Helpers
 
                 foreach (var node in drawings)
                 {
-                    if (node is not InkAnalysisInkDrawing drawing)
+                    InkAnalysisInkDrawing drawing;
+
+                    try
+                    {
+                        drawing = node.As<InkAnalysisInkDrawing>();
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+
+                    if (drawing is null)
                     {
                         continue;
                     }
